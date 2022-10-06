@@ -1,0 +1,245 @@
+---
+title: "Kontrakty terminowe - ćwiczenia/projekt"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+# Cel pierwszych zajęć (2022.10.06):
+wycenić opcję azjatycką typu "call", o wypłacie:
+$$
+C_T=
+\max\left(0,
+K - \frac1T \int_0^T S_t\,dt
+\right),
+$$
+gdzie proces stochastyczny ceny $S_t$ ma realizacje takie, jak ta na rysunku poniżej:
+```{r Trajektoria GBM (geometrycznego procesu Browna), echo=TRUE}
+n=1000
+S=exp(c(0,cumsum(rnorm(n)))/sqrt(n))
+plot(S,type="l",ylab="S_t",xlab="t")
+```
+To znaczy, napisać kod 
+(ładne wprowadzenie do R jest tu:
+https://cran.r-project.org/doc/contrib/Torfs+Brauer-Short-R-Intro.pdf)
+wyliczający przybliżenie wartości oczekiwanej
+$$
+  V = E(e^{-rT} C_T),
+$$
+generując próbki $S_t(\omega)$ trajektorii ceny 
+w punktach $t$ (np. równo odległych o $dt=T/m$)
+$$
+0=t_0<t_1<t_2<\ldots<t_m=T.
+$$
+Zakładamy, że cena $S$ jest wartością geometrycznego procesu Browna,
+$$
+S_0=S>0, \qquad 
+d(\log S_t) = dS_t/S_t = r\,dt + \sigma\,dW_t,
+$$
+przy czym dane są stałe rzeczywiste:
+$$
+S>0,\quad
+\sigma>0, \quad
+T>0, \quad
+r\in R, \quad
+K>0.
+$$
+Dane i wynik testowy:
+$$
+S=2;\quad
+\sigma = 0,\!5;\quad
+T = 1;\quad
+r = 0,\!05;\quad
+K=2;\qquad
+C_T = 0,\!2464.
+$$
+Do wyznaczenia całki $\int_0^T S_t \, dt$,
+można użyć metody trapezów:
+$$
+\int_0^T S_t \, dt
+\approx
+\frac1m
+\left(
+\frac{S_{0}}2
++S_{h}+S_{2h}+\ldots+S_{(m-1)h}
++\frac{S_{T}}2
+\right),
+\qquad\text{gdzie}\quad
+h=\frac T m.
+$$
+W związku z tym, musimy wiedzieć (z wykładu), 
+jak obliczyć aproksymację $S_{t_1}$, $S_{t_2}$, ...
+
+# Wejściówka
+
+Uprzejmie proszę o wypisanie (na podpisanych kartkach i samodzielnie) 
+schematu Eulera dla równania stochastycznego
+$$
+X_0=x, \qquad 
+dX_t = \mu\,dt + \sigma\,dW_t,
+$$
+gdzie $x$, $\mu$, $\sigma$ - to dane stałe.
+
+# A teraz od początku ...
+
+W estymacji modeli o dużej liczbie wymiarów (np. dużej liczbie punktów wykresu $S_t$),
+popularna jest metoda Monte Carlo.
+
+Zilustrujmy ją na przykładzie obliczenia całki:
+$$
+A = \int_0^1 f(x)\, dx 
+\approx
+\frac1n \sum_{i=1}^n f(x_i) = A_n,
+$$
+gdzie punkty $x_i$ są próbkami z rozkładu jednostajnego na $[0,1]$.
+```{r}
+f = function(x) { return(x^2) }
+n = 100
+x = runif(n) # rozkład jednostajny U(0,1)
+An = 1/n * sum( sapply(x, f) )
+print(An)
+```
+Uruchamiając powyższy fragment kodu kilkukrotnie, 
+przekonujemy się, że $A_n$ to (oczywiście) zmienna losowa.
+Pytanie, jaka jest dokładność powyższej aproksymacji całki?
+Z CTG wynika, że dla dużego $n$ ustalonego,
+ma ona rozkład zbliżony do normalnego,
+$A_n \sim N(A,\sigma_n^2)$, a więc w szczególności 
+$$
+  P\{A_n \in [A - 2\sigma_n,\; A+2\sigma_n]\} \approx 0,\!9545.
+$$
+
+# Ćwiczenie 1.
+
+Proszę zbadać rozkład zmiennej losowej $A_n$ (wykreślić histogram na tle wykresu gęstości rozkładu normalnego), dla $n = 100$.
+
+# Ćwiczenie 2.
+
+Jak zmienia się odchylenie standardowe $\sigma_n$ zmiennej $A_n$ wraz ze wzrostem $n$?
+Proszę wykonać wykres.
+Ile trzeba wykonać losowań punktu $x_i$, 
+by dokładność względna całki wyniosła 1 procent, 
+z prawdopodobieństwem przynajmniej 95%?
+A ile, by wyniosła ćwierć procent?
+
+# Ćwiczenie 3.
+
+Wyznaczyć całkę $A$ używając aproksymacji metodą trapezów.
+Ile trzeba wykonać obliczeń wartości funkcji $f$, 
+by dokładność względna całki wyniosła 1 procent?
+A ćwierć procent?
+
+# Opcje europejskie
+
+Opcja europejska typu "call" jest kontraktem,
+który zawarty w chwili $t=0$,
+uprawnia do kupna "jednej sztuki" instrumentu finansowego (np. akcji) 
+w chwili przyszłej $t=T$,
+po cenie $K$.
+
+Wypłata opcji europejskiej typu "call" wynosi więc:
+$$
+C_T = \max\left(0, S_T - K \right),
+$$
+gdzie $S_T$ jest ceną wspomnianego instrumentu w chwili $T$,
+na razie nieznaną.
+Dodatkowo, ponieważ pieniądz traci (zazwyczaj) na wartości w tempie
+geometrycznym, tzw. zdyskontowana wartość tejże opcji wyniesie:
+$$
+e^{-rT}\; \max\left(0, S_T - K \right).
+$$
+Przyjmijmy na początek model Blacka-Scholesa (BS), mówiący,
+że cena $S_t$ jest realizacją (tj. losową trajektorią) 
+geometrycznego procesu Browna, opisanego wcześniej:
+$$
+S_0=x>0, \qquad 
+d(\log S_t) = dS_t/S_t = r\,dt + \sigma\,dW_t.
+$$
+Jeśli $r$ i $\sigma$ oraz $x$ są stałe, to powyższe równania stochastyczne 
+ma rozwiązanie jawne:
+$$
+S_T = S_0 \exp\left(
+(r-\frac12\sigma^2)T + \sigma W_T  
+\right).
+\qquad\qquad (*)
+$$
+Ponieważ $W_T$ ma rozkład $N(0,T)$, cena $S_T$ ma rozkład logarytmiczno-normalny.
+Natomiast sprawiedliwa cena opcji jest wartością oczekiwaną względem tego rozkładu:
+$$
+V = E\Big(e^{-rT}\; \max\left(0, S_T - K \right)\Big).
+$$
+Model BS ze stałymi współczynnikami jest o tyle korzystny, 
+że cena opcji europejskiej ma wzór jawny:
+$$
+V = BS(S,\sigma,T,r,K) = 
+S\Phi(d_1)-e^{-rT}K\Phi(d_2),
+$$
+przy czym
+$$
+d_1 = \frac{\log(S/K)+(r+\tfrac12\sigma^2)T}{\sigma\sqrt{T}},
+\quad
+d_2 = d_1 -\sigma\sqrt{T}.
+$$
+# Ćwiczenie 4.
+
+Napisać funkcję obliczającą wartość $BS(S,\sigma,T,r,K)$, ze wzoru jawnego.
+
+# Ćwiczenie 5.
+
+Załóżmy, że cena $S_T$ jest zmienną losową daną wzorem (*), powyżej.
+Korzystając z tego, że $W_T$ ma rozkład $N(0,T)$, 
+a więc taki sam, jak $\sqrt{T}Z$, gdzie $Z\sim N(0,1)$,
+napisać program do estymacji wartości oczekiwanej $V=E(e^{-rT}\max(0,S_T-K))$.
+
+Uwaga: tu jeszcze nie potrzebujemy losować całych trajektorii $S_t$,
+a tylko wartość $S_T$ w chwili końcowej.
+
+Porównać wynik z wynikiem ćwiczenia poprzedniego. Jaka jest jego wariancja?
+
+Wskazówka: algorytm wygląda następująco:
+
+1. Dla $i = 1,2,...,n$:
+{
+  Wygeneruj $Z_i \sim N(0,1)$.
+  Niech $(S_T)_i = S \exp( (r-\sigma^2/2)T + \sigma\sqrt{T}Z_i )$.
+  Niech $C_i = e^{-rT}\max(0,(S_T)_i-K)$.
+}
+2. Wylicz $\hat V_n = (C_1+\ldots+C_n)/n$.
+
+# Ćwiczenie 6.
+
+Nie mamy wzoru jawnego dla wyceny opcji azjatyckich, typu wyżej opisanego.
+Przyjmijmy, że $Z_{ij}$ są próbkami ze standardowego rozkładu normalnego.
+Proszę napisać program, realizujący stosowny algorytm Monte Carlo:
+
+1. Dla $i = 1,2,...,n$:
+{
+  1.0. Niech $h = T/m$, $S_0 = S$.
+  1.1. Dla $j = 1,2,...,m$:
+  {
+    Wygeneruj $Z_{ij} \sim N(0,1)$.
+    Niech $$S_{jh} = S_{(j-1)h} \exp\Big( (r-\sigma^2/2)h + \sigma\sqrt{h}Z_{ij} \Big).$$
+  }
+  1.2. Wylicz $\bar S = \frac1T\int_0^T S_t \, dt$ metodą trapezów (p. wyżej).
+  1.3. Niech $C_i = \exp(-rT)\max(0,\bar S-K)$.
+}
+2. Wylicz $\hat V_n = (C_1+\ldots+C_n)/n$.
+
+Porównać wynik z wartościami wzorcowymi (p. wyżej). Jaka jest jego wariancja?
+
+------------------------------
+Koniec zajęć.
+------------------------------
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+http://arxiv.org/abs/1505.06946v1
