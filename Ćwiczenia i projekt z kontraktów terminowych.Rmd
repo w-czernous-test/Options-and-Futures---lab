@@ -38,7 +38,7 @@ $$
 Zakładamy, że cena $S$ jest wartością geometrycznego procesu Browna,
 $$
 S_0=S>0, \qquad 
-d(\log S_t) = dS_t/S_t = r\,dt + \sigma\,dW_t,
+dS_t/S_t = r\,dt + \sigma\,dW_t,
 $$
 przy czym dane są stałe rzeczywiste:
 $$
