@@ -157,7 +157,7 @@ Przyjmijmy na początek model Blacka-Scholesa (BS), mówiący,
 geometrycznego procesu Browna, opisanego wcześniej:
 $$
 S_0=x>0, \qquad 
-d(\log S_t) = dS_t/S_t = r\,dt + \sigma\,dW_t.
+dS_t/S_t = r\,dt + \sigma\,dW_t.
 $$
 Jeśli $r$ i $\sigma$ oraz $x$ są stałe, to powyższe równania stochastyczne 
 ma rozwiązanie jawne:
