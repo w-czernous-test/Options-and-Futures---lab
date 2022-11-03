@@ -1,0 +1,29 @@
+---
+title: "Redukcja wariancji"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+Przykłady 4.1.1 i 4.1.2 z książki Glassermana: 
+```{r}
+sampleS_T = function(S_0=50,sigma=.3,T=.25,r=.05) {
+  Z = rnorm(1)
+  S_T = S_0 * exp((r-sigma^2/2)*T + sigma*sqrt(T)*Z)
+  return(S_T)
+}
+payoffEC = function(S_T, r=.05, T=.25, K=50) {
+  Y = exp(-r*T) * max(0, S_T - K)
+  return(Y)
+}
+expectedControlVariateS_T = function(S_0=50,T=.25,r=.05) {
+  ES_T = exp(r*T) * S_0
+  return(ES_T)
+}
+# 1) Napisać funkcję liniową, która oblicza Y_i(b) dla danych: 
+# Y_i, X_i, EX, b
+# (jeden składnik sumy (4.1))
+#
+# 2) Wyznaczyć wartości tablicy 4.1/s.189 
+# oraz dodatkowo współczynnik polepszenia dokładności 1/(1-\rho^2).
+# 3) Wygenerować rys. 4.2/s.190.
+```
