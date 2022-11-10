@@ -1,29 +1,446 @@
 ---
 title: "Redukcja wariancji"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "`r Sys.Date()`"
 ---
 
-Przykłady 4.1.1 i 4.1.2 z książki Glassermana: 
+```{=tex}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+```
+# Przykład pierwszy - cena opcji europejskiej vs. cena instrumentu bazowego w chwili T
+
 ```{r}
-sampleS_T = function(S_0=50,sigma=.3,T=.25,r=.05) {
+sample_S_T = function(S_0=50,sigma=.3,T=.25,r=.05) {
   Z = rnorm(1)
   S_T = S_0 * exp((r-sigma^2/2)*T + sigma*sqrt(T)*Z)
   return(S_T)
 }
-payoffEC = function(S_T, r=.05, T=.25, K=50) {
-  Y = exp(-r*T) * max(0, S_T - K)
+payoff_European = function(S_T, r=.05, T=.25, K=50) {
+  Y = exp(-r*T) * pmax(0, S_T - K) 
+  # 'pmax' to 'max', który działa również wtedy, gdy S_T jest wektorem
   return(Y)
 }
-expectedControlVariateS_T = function(S_0=50,T=.25,r=.05) {
+expectation_of_S_T = function(S_0=50,T=.25,r=.05) {
   ES_T = exp(r*T) * S_0
   return(ES_T)
 }
-# 1) Napisać funkcję liniową, która oblicza Y_i(b) dla danych: 
-# Y_i, X_i, EX, b
-# (jeden składnik sumy (4.1))
-#
-# 2) Wyznaczyć wartości tablicy 4.1/s.189 
-# oraz dodatkowo współczynnik polepszenia dokładności 1/(1-\rho^2).
-# 3) Wygenerować rys. 4.2/s.190.
+```
+
+Weźmy wyniki $Y_1, Y_2, \ldots, Y_n$ pewnej symulacji. Zmienna losowa $Y_i$ może być na przykład zdyskontowaną wypłatą dla europejskiej opcji kupna, odpowiadającą $i$-tej symulacji trajektorii procesu cen instrumentu bazowego:
+
+```{r}
+n = 100
+y = replicate(n, payoff_European(sample_S_T()))
+```
+
+Załóżmy, że $Y_i$ są niezależne o jednakowym rozkładzie, i że naszym celem jest oszacowanie $EY_i$, za pomocą średniej z próbek, $\bar Y=(Y_1+\ldots+Y_n)/n$:
+
+```{r}
+bar_y = mean(y)
+```
+
+Przypuśćmy następnie, że z każdą próbką $Y_i$ możemy powiązać inną wartość, $X_i$. Załóżmy, że pary $(X_i,Y_i)$ są niezależne o tym samym rozkładzie, i że wartość oczekiwana $EX_i$ [jest znana]{.underline}. Może to być, na przykład, cena instrumentu bazowego $S_T$:
+
+```{r}
+n = 100
+x = replicate(n, sample_S_T())
+y = payoff_European(S_T = x)
+```
+
+Oznaczmy jeszcze jedną parę o tym samym rozkładzie przez $(X,Y)$. Dla ustalonej wartości parametru $b\in R$ zdefiniujmy:
+
+$$
+Y_i(b) = Y_i - b(X_i - EX).
+$$
+
+Budujemy inny estymator wartości $EY$, $\bar Y(b)$:
+
+$$
+\bar Y(b) = \frac1n \sum_{i=1}^n \Big(Y_i-b(X_i-EX)\Big),
+$$
+
+nieobciążony (tj. $E\bar Y(b)=EY$) dzięki temu, że $E(X_i-EX)=0$.
+
+Estymatory $\bar Y$ i $\bar Y(b)$ mają wariancje:
+
+$$
+\operatorname{Var}(\bar Y) = \operatorname{Var}(Y)/n,
+\qquad
+\operatorname{Var}(\bar Y(b)) = \operatorname{Var}(Y_i(b))/n,
+$$
+
+przy czym zmienna losowa $Y_i(b)$ ma wariancję
+
+$$
+\operatorname{Var}(Y_i(b)) = \operatorname{Var}(Y)-2b \operatorname{Cov}(X,Y) + b^2 \operatorname{Var}(X),
+$$
+
+która jest najmniejsza, gdy $b=b^*=\operatorname{Cov}(X,Y)/\operatorname{Var}(X)$. W praktyce możemy nie dysponować wartościami $\operatorname{Cov}(X,Y)$ i $\operatorname{Var}(X)$, więc zastępujemy je estymatorami:
+
+```{r}
+bstar = cov(x,y)/var(x)
+```
+
+## Ćwiczenie 1.a
+
+Niech S_0=50, sigma=0.3, T=0.25, r=0.05, K=50. Wygenerować wektor próbek ceny europejskiej opcji kupna, o zredukowanej wariancji, przyjmując przybliżoną wartość optymalną parametru b (bstar).
+
+Należy skonstruować wektor 'yb' o współrzędnych $(Y_1(b),Y_2(b),\ldots,Y_n(b))$ (p. wzory powyżej).
+
+```{r}
+n = 100
+x = replicate(n, sample_S_T())
+y = payoff_European(S_T = x)
+EX = expectation_of_S_T()
+## Your code goes here :)
+
+
+
+###
+message('Wariancja estymatora ceny: ', var(y)/n, '\n', 'Wariancja zredukowana    : ', var(yb)/n,'\n')
+```
+
+## Współczynnik korelacji $\rho$ a przyspieszenie obliczeń
+
+Podstawiając $b^*$ do wzoru na $\operatorname{Var}(Y_i(b))$, mamy:
+
+$$
+\operatorname{Var}(Y_1(b))=\operatorname{Var}(Y)-\operatorname{Cov}(X,Y)^2/\operatorname{Var}(X).
+$$
+
+Dalej,
+
+$$
+\operatorname{Var}(\bar Y(b)) = \operatorname{Var}\left(\frac{Y_1(b)+\ldots+Y_n(b)}{n}\right)=\frac{\operatorname{Var}(Y_1(b))}{n},
+\\
+\operatorname{Var}(\bar Y) = 
+\operatorname{Var}\left(\frac{Y_1+\ldots+Y_n}{n}\right)=\frac{\operatorname{Var}(Y)}{n},
+\\
+\frac{\operatorname{Var}(\bar Y(b))}{\operatorname{Var}(\bar Y)} =
+\frac{\operatorname{Var}(Y_1(b))}{\operatorname{Var}(Y)}
+=
+1-\frac{\operatorname{Cov}(X,Y)^2}{\operatorname{Var}(X)\operatorname{Var}(Y)}=1-\rho^2.
+$$
+
+Zauważmy (patrząc na drugie równanie), że aby zmniejszyć $k$-krotnie wariancję estymatora $\bar Y$, należy wylosować $kn$ próbek $Y_i$, zamiast $n$. Zatem użycie estymatora $\bar Y(b)$ pozwala (p. trzecie równanie) wykonać $(1-\rho^2)n$ prób zamiast $n$, dla otrzymania tej samej wariancji.
+
+```{r, echo=FALSE}
+rho = cor(x,y) # estymator współczynnika korelacji
+message("rho = ", rho, "\n", "Jak bardzo możemy skrócić czas obliczeń, stosując Y_i(b) zamiast Y_i: \n", "1-rho^2 = ", 1-rho^2)
+```
+
+Na ogół życzymy sobie, by $\rho$ było dość bliskie jedynki. Na przykład dla $\rho=0,95$ mamy około dziesięciokrotne ($1-\rho^2 \approx 0,1$) przyspieszenie, dla $\rho=0,9$ tylko pięciokrotne, zaś dla $\rho=0,7$ - tylko dwukrotne.
+
+## Ćwiczenie 1.b
+
+Współczynnik korelacji może zależeć od parametrów opcji. Niech S_0=50, sigma=0.3, T=0.25, r=0.05.
+
+Należy wyznaczyć rho, (1-rho\^2) oraz 1/(1-rho\^2) dla różnych wartości K:
+
+```{r}
+Ks = c(40,45,50,55,60,65,70)
+n = 100
+x = replicate(n, sample_S_T())
+for (K in Ks) {
+  ## Your code goes here :)
+
+  
+  ###
+  print(c(K, rho, (1-rho^2), 1/(1-rho^2)))
+}
+```
+
+Kiedy mamy przynajmniej dwukrotną oszczędność liczby prób n?
+
+# Przykład drugi - cena opcji azjatyckiej vs. cena instrumentu bazowego w chwili T
+
+Spróbujmy teraz zredukować wariancję estymatora ceny opcji azjatyckiej $EY$. Użyjemy skorelowanej z $Y$ zmiennej $X=S_T$, jak w pierwszym przykładzie. Oznaczmy w takim razie:
+
+-   $S$ - trajektoria ceny instrumentu bazowego, $S = (S(t_1),\ldots,S(t_n))$,
+
+-   $Y$ - wartość wypłaty opcji azjatyckiej, odpowiadająca trajektorii $S$,
+
+-   $X$ - cena $S_T$, czyli ostatnia wartość trajektorii $S$.
+
+    Trajektoria $S$ może być generowana funkcją:
+
+```{r}
+sample_trajectory_of_S = function(S_0=50,sigma=.3,T=.25,r=.05,n=100) {
+  h = T/n
+  alpha = (r - sigma^2/2)*h
+  beta = sigma * sqrt(h)
+  S = c(S_0)
+  for (i in 1:n) {
+    Z = rnorm(1)
+    S[i+1] = S[i] * exp(alpha + beta * Z)
+  }
+  return ( S )
+}
+```
+
+Dla ustalonej trajektorii, można wyliczać następnie cenę $X = S_T$:
+
+```{r}
+last_price = function(trajectory) {
+  n = length(trajectory)
+  x = trajectory[n]
+  return(x)
+}
+# test:
+S = sample_trajectory_of_S(n = 10)
+S_T = last_price(S)
+print(S)
+print(S_T)
+```
+
+Dla danej trajektorii $S$, odpowiadająca jej wypłata $Y$ opcji azjatyckiej wygląda tak:
+
+```{r}
+trapezoidal = function(y, h) { #całka metodą trapezów na węzłach równoodległych
+  n = length(y)
+  s = sum(y) - 0.5 * y[1] - 0.5 * y[n]
+  return (h * s)
+}
+payoff_Asian = function(trajectory,T=.25,r=.05,K=50) {
+  n = length(trajectory)
+  h = T/n
+  barS = 1/T * trapezoidal(trajectory,h)
+  return ( exp(-r*T) * max(0, barS - K) )
+}
+# test:
+S = sample_trajectory_of_S()
+payoff = payoff_Asian(trajectory = S)
+print(payoff)
+```
+
+Dlaczego czasami wynik powyższego kodu wynosi zero?
+
+## Ćwiczenie 2
+
+Zbadajmy, jak bardzo możemy zredukować wariancję estymatora $EY$, przy użyciu zmiennej $X$. Ponieważ teraz losujemy całe trajektorie, poręczniej będzie użyć pętli for:
+
+```{r}
+n = 100
+x = c()
+y = c()
+for (i in 1:n) {
+  # Należy wygenerować S, czyli i-tą trajektorię.
+  ## Your code goes here :)
+
+  
+  ###
+  x[i] = last_price(S)
+  y[i] = payoff_Asian(trajectory = S)
+}
+rho = cor(x,y)
+print(1-rho^2)
+```
+
+Czy warto było pisać dodatkowy kod?
+
+# Przykład trzeci - cena opcji azjatyckiej vs. cena opcji europejskiej
+
+## Ćwiczenie 3
+
+Spróbujmy bardziej zredukować wariancję estymatora ceny $EY$ opcji azjatyckiej. Użyjemy skorelowanej z $Y$ zmiennej $X$, będącej wypłatą z opcji europejskiej. Oznaczmy w takim razie:
+
+-   $S$ - trajektoria ceny instrumentu bazowego, $S = (S(t_1),\ldots,S(t_n))$,
+
+-   $Y$ - wartość wypłaty opcji azjatyckiej, odpowiadająca trajektorii $S$,
+
+-   $X$ - wartość wypłaty opcji europejskiej, odpowiadająca trajektorii $S$.
+
+```{r}
+n = 100
+x = c()
+y = c()
+for (i in 1:n) {
+  S = sample_trajectory_of_S()
+  S_T = last_price(trajectory = S)
+  ## Your code goes here :)
+
+  
+  ###
+}
+rho = cor(x,y)
+print(1-rho^2)
+```
+
+Czy otrzymaliśmy lepszą redukcję wariancji?
+
+# Przykład czwarty - cena opcji azjatyckiej vs. cena jej wariantu ze średnią geometryczną
+
+Spróbujmy jeszcze bardziej zredukować wariancję estymatora ceny $EY$ opcji azjatyckiej.
+
+Czasami opcja, której cenę możemy tylko symulować metodami Monte Carlo, posiada wariant (niekoniecznie istniejący na rynku), dla którego istnieje wzór jawny. Dla opcji azjatyckiej taką modyfikację otrzymujemy przez zastąpienie średniej arytmetycznej lub całki - średnią geometryczną.
+
+Użyjemy skorelowanej z $Y$ zmiennej $X$, będącej wypłatą z opcji azjatyckiej ze średnią geomaetryczną.
+
+Oznaczmy w takim razie:
+
+-   $S$ - trajektoria ceny instrumentu bazowego, $S = (S(t_1),\ldots,S(t_n))$,
+
+-   $Y$ - wartość wypłaty opcji azjatyckiej, odpowiadająca trajektorii $S$,
+
+-   $X$ - wartość wypłaty opcji azjatyckiej ze średnią geometryczną, odpowiadająca trajektorii $S$.
+
+Przypomnijmy, że bierzemy $t_i=ih$, $t_n=T$. Oznaczmy $\max(0,x)$ przez $x_+$. Zdyskontowana wypłata, zależna od całej trajektorii $S$ na $[0,T]$, wynosi wtedy:
+
+$$
+X = e^{-rT}(G_T-K)_+,
+\;\;\text{gdzie}\;
+G_T = \left(\prod_{i=1}^n S(t_i)\right)^{1/n},
+$$
+
+zaś cenę, czyli $EX$, wyrazimy wzorem analitycznym.
+
+Przyda się nam do tego celu wzór na wartość oczekiwaną pewnej funkcji zmiennej losowej o rozkładzie logarytmiczno-normalnym (czyli zmiennej $X=\exp(m+sZ)$, gdzie $Z\sim N(0,1)$). Z własności tego ostatniego, tj. na podstawie dystrybuanty i wartości oczekiwanej na półprostych:
+
+$$
+E(C\exp(m+sZ)-K)_+ = Ce^d\Phi(d_+)-K\Phi(d_-),\\
+\text{gdzie}\quad 
+d=m+\tfrac12s^2,\quad
+d_\pm=\frac{\log(C/K)+d}s\pm\frac s2.
+$$
+
+Zapiszmy go w postaci funkcji R:
+
+```{r}
+expected_Call_LogNormal = function(C,m,s,K) {
+  d = m + s^2 / 2
+  d1 = (log(C/K)+d) / s + s/2
+  d2 = d1 - s
+  return( C*exp(d)*dnorm(d1) - K*dnorm(d2) )
+}
+```
+
+Ponieważ $S(t_i)=S(0)\exp((r-\frac{\sigma^2}2)t_i+\sigma W(t_i))$,
+
+$$
+G_T=\left(\prod_{i=1}^n S(t_i)\right)^{1/n}
+=
+S(0)\exp\left(
+(r-\frac{\sigma^2}2)\frac1n\sum_{i=1}^n t_i+\sigma \frac1n \sum_{i=1}^n W(t_i)
+\right).
+$$
+
+Prawa strona powyżej ma już postać $C\exp(m+sZ)$, gdzie $Z\sim N(0,1)$, mianowicie dla:
+
+$$
+C=S(0),
+\quad
+m = (r-\frac{\sigma^2}2)\frac1n\sum_{i=1}^n t_i,
+\quad
+sZ = \sigma \frac1n \sum_{i=1}^n W(t_i),
+$$
+
+a to dzięki temu, że $W(t_i)\sim N(0,t_i)$ i dodając zmienne losowe o rozkładzie normalnym otrzymujemy sumę losową o rozkładzie normalnym. Ponadto $\sum_i t_i=\sum_i ih=hn(n+1)/2=T(n+1)/2$ (bo $hn=T$), więc mamy
+
+$$
+m=(r-\frac{\sigma^2}2)\frac{T(n+1)}{2n}.
+$$
+
+Pozostaje wyznaczyć $s$. Wiadomo, że istnieją $X_1$, $X_2$, ..., niezależne, o jednakowym rozkładzie $N(0,h)$, takie że:
+
+$$
+W(t_1) = W(h) = X_1,\\
+W(t_2) = W(2h) = W(h) + X_2 = X_1 + X_2,\\
+\vdots\\
+W(t_n) = W(nh) = W((n-1)h) + X_n = X_1+\ldots+X_n.
+$$
+
+Zatem
+
+$$
+\operatorname{Var}\sum_{i=1}^n W(t_i)=\operatorname{Var}\sum_{i=1}^n W(ih) 
+\\= \operatorname{Var}(nX_1+(n-1)X_2+\ldots+X_n) 
+\\=\operatorname{Var}(nX_1)+\operatorname{Var}((n-1)X_2)\ldots+\operatorname{Var}(X_n) 
+\\=n^2h + (n-1)^2h+\ldots+h
+\\=\frac{n(n+1)(2n+1)h}6
+=\frac{T(n+1)(2n+1)}6,
+$$
+
+a stąd
+
+$$
+s = \frac{\sigma}{n}\sqrt{\frac{T(n+1)(2n+1)}6}.
+$$
+
+Wzór analityczny, dla znalezienia ceny $EX$ opcji azjatyckiej ze średnią geometryczną, można więc zaimplementować tak:
+
+```{r}
+expected_payoff_AsianGeomMean = function(S_0=50,sigma=.3,T=.25,r=.05,K=50,n=100) {
+  C = S_0
+  m = (r - sigma^2/2) * T * (n+1) / (2*n)
+  tmp = T*(n+1)*(2*n+1)/6
+  s = sigma / n * sqrt(tmp)
+  return ( expected_Call_LogNormal(C,m,s,K) )
+}
+```
+
+## Ćwiczenie 4.a
+
+Zaprogramować wypłatę $X$ z opcji azjatyckiej ze średnią geometryczną, dla danej trajektorii ceny $S$:
+
+```{r}
+geometricMean = function(y) {
+  n = length(y)
+  # Uwaga: zwykłe mnożenie współrzędnych y może powodować przekroczenie dozwolonego zakresu,
+  # (np. .Machine$double.xmax), ale użycie logarytmu pozwala ominąć ten problem.
+  
+  ## Your code goes here :)
+
+  
+  
+  ###
+  return (gm)
+}
+payoff_AsianGeomMean = function(trajectory,T=.25,r=.05,K=50) {
+  G_T = geometricMean(trajectory[-1]) # bez 1-go elementu (S_0)
+  ## Your code goes here :)
+  
+  
+  ###
+  return (price)
+}
+```
+
+## Ćwiczenie 4.b
+
+Wyznaczmy współczynnik redukcji wariancji dla powyższych $X$ i $Y$.
+
+```{r}
+n = 100
+x = c()
+y = c()
+for (i in 1:n) {
+  S = sample_trajectory_of_S()
+  ## Your code goes here :)
+
+  
+  ###
+}
+rho = cor(x,y)
+print(1-rho^2)
+```
+
+Świetny wynik! A teraz skorzystajmy z tej metody wyceny.
+
+## Ćwiczenie 4.c
+
+Wycenić opcję azjatycką (wyestymować $EY$), redukując wariancję próbek ceny $Y$ przy użyciu zmiennej skorelowanej $X$.
+
+```{r}
+## Your code goes here :)
+
+
+
+
+
+
+
+###
 ```
