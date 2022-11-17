@@ -1,0 +1,40 @@
+---
+title: "Amerykańskie opcje sprzedaży"
+output: html_document
+date: "`r Sys.Date()`"
+---
+# Opcje amerykańskie
+
+## Ćwiczenie 1.
+
+Niech S_0=50, sigma=0.3, T=0.25, r=0.05, K=50.
+
+Amerykańska opcja sprzedaży może być zrealizowana przez jej nabywcę w dowolnym momencie $t \in [0,T]$, a jej wypłata wynosi wówczas $K - S_t$. 
+
+Wycenić amerykańską opcję sprzedaży (typu "perpetual", czyli z nieskończonym terminem wykonania, $T = \infty$), przy założeniu, że optymalny moment $\tau$ wykonania opcji przez nabywcę, jest postaci:
+
+$$
+\tau = \inf\{ t\ge0 : S_t < L \}
+$$
+
+dla pewnego $L\in(0,K)$.
+Dla ustalonego $L$, wartość takiej strategii wykonania opcji przez nabywcę, wynosi $v_L(S_0)$, gdzie
+
+$$
+v_L(x) = (K-L) E[\exp(-r\tau)]
+$$
+
+Innymi słowy, dla ustalonego $L$, $0 < L < K$, wygenerować trajektorie procesu $S$ startujące z $S_0 = x$, $L < x$, a kończące się w pierwszej chwili $\tau$ takiej, że $S_\tau < L$, a mając już dużą liczbę takich trajektorii, wyestymować wartość oczekiwaną $E[\exp(-r\tau)]$. 
+
+(Można zmodyfikować funkcje z poprzedniego pliku, generujące trajektorie.)
+
+Wartość analityczna $E[\exp(-r\tau)]$ dla $x \ge L$, to 
+
+$$
+\left( \frac{x}{L} \right)^{-2r/\sigma^2}.
+$$
+
+## Ćwiczenie 2.
+
+Wyznaczyć wartość momentu stopu $\tau$, gdy $x < L$. 
+Jaka jest wówczas wartość strategii wykonania opcji przez nabywcę w momencie $\tau$?
