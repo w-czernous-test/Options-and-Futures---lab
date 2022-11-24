@@ -3,38 +3,151 @@ title: "Amerykańskie opcje sprzedaży"
 output: html_document
 date: "`r Sys.Date()`"
 ---
+
 # Opcje amerykańskie
 
-## Ćwiczenie 1.
+Amerykańska opcja sprzedaży może być zrealizowana przez jej nabywcę w dowolnym momencie $t \in [0,T]$, a jej wypłata wynosi wówczas $K - S_t$.
 
 Niech S_0=50, sigma=0.3, T=0.25, r=0.05, K=50.
 
-Amerykańska opcja sprzedaży może być zrealizowana przez jej nabywcę w dowolnym momencie $t \in [0,T]$, a jej wypłata wynosi wówczas $K - S_t$. 
+Cena z kalkulatora dla powyższych parametrów ("Days to Expiration = 91", <https://www.optionseducation.org/toolsoptionquotes/optionscalculator> ) wynosi 2.7176.
 
-Wycenić amerykańską opcję sprzedaży (typu "perpetual", czyli z nieskończonym terminem wykonania, $T = \infty$), przy założeniu, że optymalny moment $\tau$ wykonania opcji przez nabywcę, jest postaci:
+## Ćwiczenie 1.
+
+Przypuśćmy, na potrzeby tego ćwiczenia, że $T = \infty$. Jest to (w obrocie wyłącznie na rynku OTC, tj. pozagiełdowym) opcja z nieskończonym terminem wykonania, tzw. "perpetual" lub "XPO".
+
+Spróbujmy wycenić tę opcję przy założeniu, że optymalny moment $\tau$ wykonania opcji przez nabywcę, jest postaci:
 
 $$
-\tau = \inf\{ t\ge0 : S_t < L \}
+\tau_L = \inf\{ t\ge0 : S_t < L \}
 $$
 
 dla pewnego $L\in(0,K)$.
+
+Funkcja wyznaczająca $\tau_L$ dla jednej, losowej trajektorii $S$:
+```{r}
+sample_tau_L = function(L, S_0=50, sigma=.3, r=.05, h=0.01, epsilon=0.01) {
+  # Jak długo (w latach) trzeba czekać, by cena spadła poniżej wartości L:
+  S = S_0
+  t = 0
+  # Aby algorytm działał w skończonym czasie,
+  # przerywajmy poszukiwania, 
+  # gdy exp(-rt) < epsilon,
+  # czyli gdy -rt < log(epsilon):
+  max_t = -log(epsilon) / r
+  while (t < max_t) {
+    t = t + h
+    ## Your code goes here :)
+    
+    
+    ##
+    if (S < L)
+      break
+  }
+  return ( t )
+}
+print(sample_tau_L(45))
+```
+
 Dla ustalonego $L$, wartość takiej strategii wykonania opcji przez nabywcę, wynosi $v_L(S_0)$, gdzie
 
 $$
-v_L(x) = (K-L) E[\exp(-r\tau)]
+v_L(x) = (K-L) E[\exp(-r\tau_L)]
 $$
 
-Innymi słowy, dla ustalonego $L$, $0 < L < K$, wygenerować trajektorie procesu $S$ startujące z $S_0 = x$, $L < x$, a kończące się w pierwszej chwili $\tau$ takiej, że $S_\tau < L$, a mając już dużą liczbę takich trajektorii, wyestymować wartość oczekiwaną $E[\exp(-r\tau)]$. 
+```{r}
+v_L = function(x, L, K=50, r=.05, n=100) {
+  tau_L = replicate(n,  sample_tau_L(L, S_0 = x))  # (to jest wektor)
+  df = exp(-r*tau_L) 
+  ## Your code goes here :)
+    
+    
+  ##
+  return v
+}
+print(v_L(x = 50, L = 45))
+```
 
-(Można zmodyfikować funkcje z poprzedniego pliku, generujące trajektorie.)
-
-Wartość analityczna $E[\exp(-r\tau)]$ dla $x \ge L$, to 
+Dla sprawdzenia, wartość analityczna $E[\exp(-r\tau_L)]$ dla $S_0=x \ge L$, to
 
 $$
 \left( \frac{x}{L} \right)^{-2r/\sigma^2}.
 $$
 
-## Ćwiczenie 2.
+```{r}
+v_L_analytic = function(x, L, K=50, r=.05, sigma=.3) {
+  return ( (K-L) * (x/L)^(-2*r/(sigma^2))  )
+}
+print(v_L_analytic(x = 50, L = 45))
+```
 
-Wyznaczyć wartość momentu stopu $\tau$, gdy $x < L$. 
-Jaka jest wówczas wartość strategii wykonania opcji przez nabywcę w momencie $\tau$?
+Możemy teraz poszukać optymalnego momentu stopu $\tau_L$, dla różnych $L$, $0 < L < K$.
+
+```{r}
+S_0 = 50
+K = 50
+L = seq(from=10, to=K, by=10)
+v = c() # pusty wektor
+for (i in 1:length(L)) 
+  v[i] = v_L(x = S_0, L = L[i]) 
+plot(L, v)
+```
+
+
+Użyć funkcji 'optimize' do znalezienia przybliżonego maksimum v_L, w wybranym przedziale wartości parametru L. Przyjąć tol=0.5.
+```{r}
+S_0 = 50
+f = function(y) {
+  v_L(x = S_0, L = y, n=1000) 
+}
+## Your code goes here :)
+  
+  
+##
+print(L_opt)
+```
+
+Wzór analityczny na wartość niewygasającej amerykańskiej opcji sprzedaży, to:
+
+$$
+V(S_0,K) = 
+\left(\frac{K}{p+1}\right)^{p+1}
+\left(\frac{p}{S_0}\right)^{p},
+\qquad\text{gdzie}\;
+p = \frac{2r}{\sigma^2}.
+$$
+
+```{r}
+V_XPO_analytic = function(S_0, K=50, r=.05, sigma=.3) {
+  p = 2*r/(sigma^2)
+  pp = p+1
+  return ( (K/pp)^pp *  (p/S_0)^p  )
+}
+print(V_XPO_analytic(S_0 = 50))
+```
+
+
+
+## Ćwiczenie 2. Dynamic programming.
+
+Znajdźmy wartość $V_0$ opcji w chwili $t_0=0$. Niech $h_i$ oznacza wypłatę z opcji w chwili $t_i$, zwaną też wewnętrzną wartością (*intrinsic value*) opcji. Ponieważ opcję amerykańską możemy w każdej chwili zrealizować (otrzymując $h_i$) lub czekać, jej wartość jest nie mniejsza od wartości wewnętrznej.
+
+Wartość $V_i(X_i)$ opcji w chwili $t_i$ na rynku znajdującym się w stanie $X_i$, jest dana równaniem rekurencyjnym
+
+$$
+V_m(x) = h_m(x),\\
+V_{i-1}(x) = \max\{ h_{i-1}(x), \; q_{i-1}(x) \},\quad i\le m,\\
+\text{gdzie}\quad 
+q_{i-1}(x) = E[D_{i-1,i}(X_i)V_i(X_i) | X_{i-1}=x],
+$$
+
+przy czym $D_{i-1,i}$ jest współczynnikiem dyskonta.
+
+Jeśli przyjmiemy $X_i=S(t_i)$ (a więc decyzję o realizacji opcji podejmujemy wyłącznie na podstawie ceny $S$ instrumentu bazowego), to każda z funkcji wypłaty $h_i$ ma wzór $h_i(x) = (K-x)_+$. W szczególności zakładamy, że stopa procentowa $r$ jest stała, a zatem $D_{i-1,i}(X_i) = \exp(-r(t_i - t_{i-1}))$. Pamiętamy, że chcemy obliczyć $V_0(S_0)$. Spróbujmy znaleźć funkcję $V_{m-1}$. Oznaczmy tymczasowo $T=t_m - t_{m-1}$; wtedy:
+
+$$
+E[D_{m-1,m}(X_m)V_m(X_m) | X_{m-1}=x] = 
+E[\exp(-rT)(K-S_T)_+ | S_0=x]
+$$
+
+co jest wartością opcji europejskiej (put). W kolejnych iteracjach, przy poszukiwaniu kształtu funkcji $V_i$, $i < m-1$, już nie mamy wzorów jawnych.
