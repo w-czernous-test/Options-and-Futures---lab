@@ -313,7 +313,7 @@ expected_Call_LogNormal = function(C,m,s,K) {
   d = m + s^2 / 2
   d1 = (log(C/K)+d) / s + s/2
   d2 = d1 - s
-  return( C*exp(d)*dnorm(d1) - K*dnorm(d2) )
+  return( C*exp(d)*pnorm(d1) - K*pnorm(d2) )
 }
 ```
 
