@@ -185,6 +185,7 @@ d_\pm
 $$
 
 Odpowiednia funkcja w R:
+
 ```{r}
 C_m_1_exact = function(x, K=50, sigma=.3, r=.05, h=0.01) {
   s = sigma * sqrt(h)
@@ -199,8 +200,8 @@ W kolejnych iteracjach, przy poszukiwaniu kształtu funkcji $V_i$, $i < m$, już
 
 ## Ćwiczenie 2.
 
-Wyznaczyć aproksymację funkcji $V_{m-1}$ na przedziale $[0,100]$,
-dla h=0.01 oraz dla wartości sigma, r, K, jak wyżej. Porównać wynik z postacią analityczną na wykresie.
+Wyznaczyć aproksymację funkcji $V_{m-1}$ na przedziale $[0,100]$, dla h=0.01 oraz dla wartości sigma, r, K, jak wyżej. Porównać wynik z postacią analityczną na wykresie.
+
 ```{r}
 sample_S_h = function(x, h=.01, sigma=.3, r=.05) {
   Z = rnorm(1)
@@ -227,4 +228,51 @@ plot(x,C_m_1_approx,type="l",col="red")
 lines(x,C_m_1_real,type="l",col="green")
 ```
 
+# Ćwiczenie 3. Drzewa losowe
 
+Będziemy rozważać nieco inną wersję równań rekurencyjnych dla $V_i$. Zakładamy teraz, że $h_i$, $C_i$ oraz $V_i$ są wartościami zdyskontowanymi, tj. zawierającymi czynnik $\exp(-rt_i)$:
+
+$$
+V_m(x) = h_m(x),\\
+V_{i-1}(x) = \max\{ h_{i-1}(x), \; C_{i-1}(x) \},\quad 1\le i\le m,\\
+\text{gdzie}\quad 
+C_{i-1}(x) = E[V_i(X_i) \;|\; X_{i-1}=x].
+$$
+
+Ustalmy $b\ge 2$. Każdy węzeł drzewa odpowiada pewnemu stanowi w łańcuchu Markowa, co przekłada się na następującą metodę generowania kolejnych węzłów. Każdy węzeł (stan rynku $X_{i-1}=x$ w momencie $t_{i-1}$), ma $b$ potomków (wartości $X_i$), generowanych niezależnie z jednakowym rozkładem warunkowym:
+
+$$
+P(X_i=y | X_{i-1}=x).
+$$
+
+Wyznaczymy dwa estymatory, "górny" $\hat V$ i "dolny" $\hat v$:
+
+$$
+E\hat V_0 \ge V_0(S_0) \ge E\hat v_0.
+$$
+
+Estymator górny wyznaczymy wg przepisu (Glasserman, 8.3.1):
+
+![](images/Glasserman_8.19_8.20.png)
+
+Pomocny będzie przykład na poniższym rysunku, gdzie przyjęto dla uproszczenia $h_i(x) = (x - 100)_+$:
+
+![](images/Glasserman_Fig_8.3.png)
+
+Gdy mamy już metodę otrzymywania $\hat V_0(S_0)$, replikujemy tę funkcję $n$ razy, otrzymując pewien wektor próbek $\hat V_0(S_0)$. Pozwala to następnie oszacować przedział ufności dla $E\hat V_0(S_0)$.
+
+Estymator dolny wyznaczymy wg przepisu (Glasserman, 8.3.1):
+
+![](images/Glasserman_8.24.png)
+
+![](images/Glasserman_8.25.png)
+
+![](images/Glasserman_Fig_8.4.png)
+
+Gdy mamy już metodę otrzymywania $\hat v_0(S_0)$, replikujemy tę funkcję $n$ razy, otrzymując pewien wektor próbek $\hat v_0(S_0)$. Pozwala to następnie oszacować przedział ufności dla $E\hat v_0(S_0)$.
+
+Dalej, otrzymujemy zachowawcze oszacowanie przedziału ufności dla $V_0(S_0)$:
+
+![](images/Glasserman_8.3.2_interval.png)
+
+Możemy polepszyć czas działania tej metody, generując 1 zamiast b potomków w tych stanach, gdzie nie opłaca się realizować opcji, i wyliczając górny bądź dolny estymator jako zdyskontowaną wartość z węzła potomnego.
