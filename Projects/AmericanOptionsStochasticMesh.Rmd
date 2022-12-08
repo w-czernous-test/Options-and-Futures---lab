@@ -79,6 +79,23 @@ Estymator górny wyznaczymy wg przepisu (Glasserman, 8.3.1):
 
 ![](images/Screenshot%202022-12-07%20at%2016.13.54.png)
 
+W niniejszym przykładzie zakładamy, że ceny siedmiu aktywów, $X=(S^1,S^2,\ldots,S^7)$ ewoluują niezależnie, zgodnie z równaniem:
+
+$$
+dS^k = (r-
+\delta)dt + \sigma dW^k,
+\qquad k=1,2,\ldots,7,
+$$
+
+gdzie procesy Wienera $W^1,\ldots,W^7$ są niezależne; co modelujemy wg schematu Eulera:
+
+$$
+S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt 
++\sigma\sqrt{dt}Z^k), \\
+\qquad k=1,\ldots,7,
+\quad Z^k \sim N(0,1).
+$$
+
 ![](images/Screenshot%202022-12-07%20at%2016.01.11.png)
 
 ![](images/Screenshot%202022-12-07%20at%2016.01.23.png)
