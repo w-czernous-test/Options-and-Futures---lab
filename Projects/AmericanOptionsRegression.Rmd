@@ -1,0 +1,118 @@
+---
+title: "Opcje amerykańskie i modelowanie funkcji kontynuacji"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
+
+# Wstęp
+
+Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Przedstawiamy przykłady numeryczne dla algorytmów wyceny opcji amerykańskich, opisanych w [1], w rozdziale 8.6 pt. "Regression-Based Methods and Weights".
+
+# Opcje amerykańskie - programowanie dynamiczne
+
+Znajdźmy wartość $V_0$ opcji w chwili $t_0=0$. Niech $h_i$ oznacza zdyskontowaną wypłatę z opcji w chwili $t_i$, zwaną też wewnętrzną wartością (*intrinsic value*) opcji. Ponieważ opcję amerykańską możemy w każdej chwili zrealizować (otrzymując $h_i$) lub czekać, jej wartość jest nie mniejsza od wartości wewnętrznej.
+
+Zdyskontowana wartość $V_i(X_i)$ opcji w chwili $t_i$ na rynku znajdującym się w stanie $X_i$ (w ogólności, $X_i$ jest wektorem zawierającym ceny instrumentów, losowe stopy procentowe $r$, poziom zmienności rynku $\sigma$, itd.), jest dana równaniem rekurencyjnym (patrz [1], równania (8.6)-(8.7)):
+
+$$
+V_m(x) = h_m(x),\\
+V_{i-1}(x) = \max\{ h_{i-1}(x), \; C_{i-1}(x) \},\quad 1\le i\le m,\\
+\text{gdzie}\quad 
+C_{i-1}(x) = E[V_i(X_i) \;|\; X_{i-1}=x].
+$$
+
+Powyższe wzory definiują obwiednię Snella $V_i(X_i)$ ciągu $h_i(X_i)$, czyli najmniejszy nadmartyngał dominujący funkcję wypłaty. Z teorii optymalnego stopowania (p. [2], dodatek F.2, Twierdzenie 3) wiadomo, że 
+
+$$
+V_0(X_0) = Eh_{\tau^*}(X_{\tau^*}) = \sup_{\tau\in\Theta} Eh_{\tau}(X_{\tau}),
+$$
+
+gdzie $\Theta$ jest zbiorem wszystkich momentów stopu o wartościach w zbiorze $\{0,1,\ldots,m\}$.
+
+Wyznaczymy dwa estymatory, "górny" $\hat V$ i "dolny" $\hat v$:
+
+$$
+E\hat V_0 \ge V_0(X_0) \ge E\hat v_0.
+$$
+
+
+# Metoda regresji - model funkcji kontynuacji
+
+Metody oparte na regresji zakładają, że funkcja kontynuacji $C_i$ jest kombinacją liniową pewnych funkcji bazowych:
+
+$$
+E[V_{i+1}(X_{i+1})|X_i=x] = \sum_{r=1}^M \beta_{ir}\psi_r(x).
+$$
+
+Gdy ustalimy funkcje bazowe (przykładowy wybór funkcji bazowych przedstawimy poniżej), współczynniki kombinacji liniowej będzie można przybliżać, używając wartości funkcji w punktach siatki $(X_{ij},X_{i+1,j})$, dla $j=1,\ldots,b$. W praktyce, dokładne wartości $V_{i+1}$ są nieznane - zamiast nich używamy wartości przybliżonych $\hat V_{i+1}$.
+
+Dlaczego regresja liniowa jest tu pomocna? Otóż, jak wiadomo ze statystyki, funkcja $r(t)=E(Y|X=t)$ minimalizuje błąd średniokwadratowy $E[(Y-r(X))^2]$. W tym wypadku, minimalizujemy
+
+$$
+E[(V_{i+1}(X_{i+1}) - C_i(X_i))^2].
+$$
+
+Ponieważ mamy $b$ próbek par $(X,Y)=(X_i,X_{i+1})$, więc staramy się zminimalizować (p. funkcja 'lm' w R):
+
+$$
+\frac1b \sum_{j=1}^b \left(
+\hat V_{i+1}(X_{i+1,j}) - \sum_{r=1}^M \hat\beta_{ir}\psi_r(X_{i,j})
+\right)^2.
+$$
+
+Podsumowując, realizujemy następujący algorytm.
+
+1.  Symulujemy $b$ niezależnych trajektorii $\{X_{1j},\ldots,X_{mj}\},\;j=1,\ldots,b$, łańcucha Markowa.
+2.  W węzłach końcowych, definiujemy $\hat V_{mj} = h_m(X_{mj}),\; j=1,\ldots,b$.
+3.  Stosujemy indukcję wsteczną: dla każdego $i=m-1,\ldots,1$:
+    1.  dla danych wartości przybliżonych $\hat V_{i+1,j},\; j=1,\ldots,b$, używamy regresji liniowej ('lm') do wyznaczenia przybliżonych współczynników $\hat\beta_{ir}$ kombinacji liniowej;
+
+    2.  definiujemy
+
+        $$
+        \hat V_{ij} = \max\left\{ h_i(X_{ij}), \hat C_i(X_{ij}) \right\},\quad j=1,\ldots,b,
+        $$
+
+        gdzie
+
+        $$
+          \hat C_i(x) = \sum_{r=1}^M \hat\beta_{ir}\psi_r(x).
+        $$
+4.  Obliczamy $\hat V_0 = (\hat V_{11}+\ldots+\hat V_{1b})/b$.
+
+Wariant powyższego algorytmu, proponowany przez Longstaffa i Schwartza w [3], polega na modyfikacji 3.2. do postaci:
+
+$$
+\hat V_{ij} = \begin{cases} h_i(X_{ij}),\quad & h_i(X_{ij})\ge \hat C_i(X_{ij});\\ 
+                           \hat V_{i+1,j},    & h_i(X_{ij})< \hat C_i(X_{ij}).
+\end{cases}
+$$
+
+# Estymator dolny - stopowanie suboptymalne
+
+![](images/Screenshot%202022-12-07%20at%2018.19.21.png)
+
+# Przykład: amerykańska opcja maksimum
+
+![](images/Screenshot%202022-12-07%20at%2018.19.58.png)
+
+![](images/Screenshot%202022-12-07%20at%2018.20.09.png)
+
+![](images/Screenshot%202022-12-07%20at%2018.20.17.png)
+
+![](images/Screenshot%202022-12-07%20at%2018.20.30.png)
+
+![](images/Screenshot%202022-12-07%20at%2018.20.56.png)
+
+# Przykład numeryczny
+
+# Literatura:
+
+[1] Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer 2003
+
+[2] J. Jakubowski, R. Sztencel, *Wstęp do teorii prawdopodobieństwa*, Wyd. 4. SCRIPT, Warszawa, 2010
+
+[3] Longstaff, F.A., and Schwartz, E.S. (2001) Valuing American options by simulation: a simple least-squares approach, *Review of Financial Studies* 14:113-147.
+

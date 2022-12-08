@@ -1,0 +1,146 @@
+---
+title: "Współczynniki greckie i ilorazy wiarygodności"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
+
+# Wstęp
+
+Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Prezentujemy metodę mieszaną dla wyznaczania pochodnych cząstkowych funkcji ceny opcji, opisaną w [1] na przykładzie problemu znajdowania współczynnika delta dla opcji binarnych typu europejskiego.
+
+Załóżmy, że mamy zmienną losową $Y$ o tej własności, że $EY$ jest ceną opcji. Oprócz zależności zmiennej losowej $Y$ od $\omega\in\Omega$, mamy również zależność od parametrów występujących w modelu, np. od ceny startowej $S_0$ (która może być wektorem, jeśli opcja zależy od kilku aktywów), zmienności rynku $\sigma$, stopy procentowej $r$, terminu $T$.
+
+Problem zabezpieczenia opcji, czyli wyboru strategii inwestycyjnej przez wystawcę opcji, tak by zabezpieczyć jej wypłatę, wymaga na przykład znalezienia pochodnej ceny opcji $EY$ względem parametru $S_0$.
+
+W ogólności, jesteśmy zainteresowani wyznaczeniem pochodnej funkcji
+
+$$
+\theta\mapsto\alpha(\theta)= EY(\theta)
+$$
+
+względem pewnego parametru $\theta$.
+
+Klasyczną metodą poszukiwania przybliżeń pochodnej jest konstrukcja ilorazów różnicowych. W tym projekcie zajmiemy się dwiema innymi metodami, tzw. bezpośrednimi, dającymi estymatory $\alpha'(\theta)$.
+
+# Metoda różniczkowania wzdłuż ścieżek
+
+Przypuśćmy, że wariancja przyrostów estymatora $Y(\theta)$ ma następującą własność:
+
+$$
+\mathop{\textrm{Var}}[Y(\theta+h) - Y(\theta)] = O(h^2).
+$$
+
+Wówczas estymator $\hat\Delta = \tfrac1n\sum_{i=1}^n\tfrac1h(Y_i(\theta+h)-Y_i(\theta))$ pochodnej $\alpha'(\theta)$ ma błąd średniokwadratowy rzędu:
+
+$$
+E(\hat\Delta-\alpha'(\theta))^2 = O(h^2) + O(\tfrac1n),
+$$
+
+a więc malejący ze spadkiem wartości parametru $h$. Pozwala to sądzić, że dobrym estymatorem $\alpha'(\theta)$ jest
+
+$$
+Y'(\theta) = \lim_{h\to0}\frac{Y(\theta+h)-Y(\theta)}{h}.
+$$
+
+Estymator ten ma wartość oczekiwaną $E[Y'(\theta)]$. Jest on nieobciążonym estymatorem $\alpha'(\theta)$, o ile tylko
+
+$$
+\tag{*}
+E\left[\frac{d}{d\theta}Y(\theta)\right] = \frac{d}{d\theta}E[Y(\theta)];
+$$
+
+tj. jeśli zmiana kolejności różniczkowania i całkowania (brania wartości oczekiwanej) jest uzasadniona.
+
+Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje prawie na pewno, mówimy wtedy, że $Y'(\theta)$ jest pochodną $Y$ wzdłuż ścieżek, w punkcie $\theta$.
+
+## Przykład 1: opcje europejskie
+
+![](images/Screenshot%202022-12-07%20at%2011.12.41.png)
+
+![](images/Screenshot%202022-12-07%20at%2011.13.21.png)
+
+## Przykład 2 (negatywny): opcje binarne
+
+![](images/Screenshot%202022-12-07%20at%2011.23.29.png)
+
+Powodem, dla którego opcje binarne i ich współczynnik delta wymykają się metodzie różniczkowania wzdłuż ścieżek, jest nieciągłość (a więc i nieróżniczkowalność) $Y$ jako funkcji $S_T$. Metoda ilorazów wiarygodności jest niewrażliwa na tę nieregularność, za to ma inną wadę: uzyskiwany tą metodą estymator ma wysoką wariancję.
+
+# Metoda ilorazu wiarygodności
+
+Rozważmy wypłatę $Y$ z opcji, jako funkcję $f$ wektora stanów rynku $X=(X_1,\ldots,X_m)$. Współrzędne $X$ mogą być na przykład cenami kilku różnych aktywów, albo też cenami jednego aktywa w różnych chwilach czasu. Przy metodzie różniczkowania wzdłuż ścieżek, zakładaliśmy, że istnieje zależność funkcyjna $X$ (a stąd i $Y$) od parametru $\theta$. W metodzie ilorazu wiarygodności, zamiast tego zakładamy, że rozkład $X$ posiada gęstość $g$, i że $\theta$ jest parametrem tej gęstości. Oznaczamy więc tę gęstość przez $g_\theta$, a gdy całkujemy względem rozkładu $X$, będziemy też oznaczać wartość oczekiwaną przez $E_\theta$. W tej nomenklaturze, wartością oczekiwaną wypłaty jest
+
+$$
+E_\theta[Y] = E_\theta[f(X_1,\ldots,X_m)] = \int_{R^m} f(x)g_\theta(x)\,dx.
+$$
+
+Dla potrzeb naszej konstrukcji estymatora pochodnej, załóżmy że zmiana kolejności różniczkowania i całkowania (brania wartości oczekiwanej) jest uzasadniona, a więc, że mamy
+
+$$
+\tag{**}
+\frac{d}{d\theta}E_\theta[Y] = \int_{R^m} f(x)\frac{d}{d\theta} g_\theta(x)\,dx.
+$$
+
+W takim razie, mnożąć i dzieląc pod całką przez $g_\theta$, otrzymujemy:
+
+$$
+\frac{d}{d\theta}E_\theta[Y] 
+= \int_{R^m} f(x)\frac{g'_\theta(x)}{g_\theta(x)}g_\theta(x)\,dx
+= E_\theta\left[
+  f(X)\frac{g'_\theta(X)}{g_\theta(X)}
+\right].
+$$
+
+Stąd wynika, że wyrażenie
+
+$$
+f(X)\frac{g'_\theta(X)}{g_\theta(X)}
+$$
+
+jest nieobciążonym estymatorem pochodnej funkcji $\theta\mapsto E_\theta[Y]$. Nazywamy go estymatorem LRM (*likelihood ratio method*), ilorazu wiarygodności.
+
+Za [1], podajemy dwie uwagi dotyczące estymatora LRM.
+
+-   Podobnie, jak w metodzie różniczkowania wzdłuż ścieżek, nasze podejście jest uprawnione pod warunkiem przemienności całkowania i różniczkowania w równaniu (\*\*). W praktyce, warunek ten jest dużo mniej restrykcyjny niż równanie (\*), ponieważ gęstości są zazwyczaj gładkimi funkcjami swoich parametrów, w przeciwieństwie do funkcji wypłaty. Tak więc warunek (\*\*) zazwyczaj jest spełniony.
+
+-   W literaturze statystycznej, wyrażenie postaci $g'_\theta/g_\theta$ jest nazywane *score function*. Zmienną losową $g_\theta'(X)/g_\theta(X)$ będziemy nazywali po prostu *score*, zamiast: ,,wyrażenie, które jest mnożnikiem zdyskontowanej wypłaty w estymatorze metody ilorazów wiarygodności''.
+
+## Przykład: opcje europejskie
+
+![](images/Screenshot%202022-12-07%20at%2016.48.48.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.48.58.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.49.06.png)
+
+# Metoda mieszana
+
+Przeprowadzimy eksperymenty numeryczne, weryfikujące wyniki metody mieszanej, zilustrowane na rysunku 7.4 w [1].
+
+![](images/Screenshot%202022-12-07%20at%2016.49.58.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.50.09.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.50.17.png)
+
+```{r}
+# Parametry wspólne:
+S_0 = 100
+K = 100
+r = .05
+sigma = .30
+T = 0.25
+h = 0.01
+n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
+```
+
+```{r}
+
+```
+
+# Literatura:
+
+[1] Paul Glasserman, Monte Carlo Methods in Financial Engineering, Springer 2003
+
+[2] Wzory jawne dla współczynników greckich w opcjach europejskich. [https://en.wikipedia.org/wiki/Greeks\_(finance)#Formulas_for_European_option_Greeks](https://en.wikipedia.org/wiki/Greeks_(finance)#Formulas_for_European_option_Greeks){.uri}

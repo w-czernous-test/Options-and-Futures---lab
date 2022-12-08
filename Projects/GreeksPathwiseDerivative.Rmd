@@ -1,0 +1,119 @@
+---
+title: "Współczynniki greckie i różniczkowanie wzdłuż ścieżek"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
+
+# Wstęp
+
+Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Prezentujemy metodę różniczkowania wzdłuż ścieżek, dla wyznaczania pochodnych cząstkowych funkcji ceny opcji, opisaną w [1], w rozdziale 7.2 pt. "Pathwise Derivative Estimates".
+
+Załóżmy, że mamy estymator $Y$ ceny opcji. Oprócz zależności zmiennej losowej $Y$ od $\omega\in\Omega$, mamy również zależność od parametrów występujących w modelu, np. od ceny startowej $S_0$ (która może być wektorem, jeśli opcja zależy od kilku aktywów), zmienności rynku $\sigma$, stopy procentowej $r$, terminu $T$.
+
+Problem zabezpieczenia opcji, czyli wyboru strategii inwestycyjnej przez wystawcę opcji, tak by zabezpieczyć jej wypłatę, wymaga znalezienia pochodnej ceny opcji $EY$ względem parametru $S_0$.
+
+W ogólności, jesteśmy zainteresowani wyznaczeniem pochodnej funkcji $\theta\mapsto EY(\theta)$ względem pewnego parametru $\theta$.
+
+W tym projekcie zajmujemy się wyznaczaniem następujących pochodnych, zwanych współczynnikami greckimi: delty ($\theta=S_0$), vegi ($\theta=\sigma$), rho ($\theta=r$), thety ($\theta=T$).
+
+Pochodne te będziemy wyliczać dla europejskich i azjatyckich opcji kupna, dla których wartości wzorcowe zebrane są w pracy [3].
+
+# Metoda różniczkowania wzdłuż ścieżek
+
+Przypuśćmy, że wariancja przyrostów estymatora $Y(\theta)$ ma następującą własność:
+
+$$
+\mathop{\textrm{Var}}[Y(\theta+h) - Y(\theta)] = O(h^2).
+$$
+
+Wówczas estymator $\hat\Delta = \tfrac1n\sum_{i=1}^n\tfrac1h(Y_i(\theta+h)-Y_i(\theta))$ pochodnej $\alpha'(\theta)$ ma błąd średniokwadratowy rzędu:
+
+$$
+E(\hat\Delta-\alpha'(\theta))^2 = O(h^2) + O(\tfrac1n),
+$$
+
+a więc malejący ze spadkiem wartości parametru $h$. Pozwala to sądzić, że dobrym estymatorem $\alpha'(\theta)$ jest
+
+$$
+Y'(\theta) = \lim_{h\to0}\frac{Y(\theta+h)-Y(\theta)}{h}.
+$$
+
+Estymator ten ma wartość oczekiwaną $E[Y'(\theta)]$. Jest on nieobciążonym estymatorem $\alpha'(\theta)$, o ile tylko zachodzi równość (p. [1], równanie (7.16)):
+
+$$
+\tag{*}
+E\left[\frac{d}{d\theta}Y(\theta)\right] = \frac{d}{d\theta}E[Y(\theta)];
+$$
+
+tj. jeśli zmiana kolejności różniczkowania i całkowania (brania wartości oczekiwanej) jest uzasadniona.
+
+Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje prawie na pewno, mówimy wtedy, że $Y'(\theta)$ jest pochodną $Y$ wzdłuż ścieżek, w punkcie $\theta$.
+
+# Przykład 1: opcje europejskie
+
+![](images/Screenshot%202022-12-07%20at%2011.12.41.png)
+
+![](images/Screenshot%202022-12-07%20at%2011.13.21.png)
+
+# Przykład 2: opcje azjatyckie
+
+![](images/Screenshot%202022-12-07%20at%2011.14.31.png)
+
+# Przykład 3 (negatywny): opcje binarne
+
+![](images/Screenshot%202022-12-07%20at%2011.23.29.png)
+
+# Estymatory nieobciążone - warunki dostateczne
+
+Załóżmy, że pochodna $Y'(\theta)$ istnieje prawie na pewno. Podamy niżej warunki dostateczne na to, by zachodziła równość (\*). Ograniczymy się do ...
+
+![](images/Screenshot%202022-12-07%20at%2011.17.02.png)
+
+![](images/Screenshot%202022-12-07%20at%2011.17.23.png)
+
+![](images/Screenshot%202022-12-07%20at%2011.18.29.png)
+
+![](images/Screenshot%202022-12-07%20at%2011.20.03.png)
+
+...
+
+```{r}
+# Parametry wspólne:
+S_0 = 100
+K = 100
+r = .05
+sigma = .30
+T = 1
+h = 0.01
+n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
+```
+
+# Przykład numeryczny - opcje europejskie
+
+Wyliczymy współczynniki: delta, vega, rho, theta, dla europejskich opcji kupna z uwzględnieniem dywidend.
+
+```{r}
+
+```
+
+Wyniki porównujemy z [3], str. 276.
+
+# Przykład numeryczny - opcje azjatyckie
+
+Wyliczymy współczynniki: delta, vega, rho, theta, dla azjatyckich opcji kupna z uwzględnieniem dywidend.
+
+```{r}
+
+```
+
+Wyniki porównujemy z [3], str. 278.
+
+# Literatura:
+
+[1] Paul Glasserman, Monte Carlo Methods in Financial Engineering, Springer 2003
+
+[2] Wzory jawne dla współczynników greckich w opcjach europejskich. [https://en.wikipedia.org/wiki/Greeks\_(finance)#Formulas_for_European_option_Greeks](https://en.wikipedia.org/wiki/Greeks_(finance)#Formulas_for_European_option_Greeks){.uri}
+
+[3] Wartości dokładne dla opcji europejskich i azjatyckich: Broadie, M., Glasserman, P. (1996) Estimating security price derivatives using simulation, *Management Science* 42, 269-255.

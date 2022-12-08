@@ -1,0 +1,92 @@
+---
+title: "Opcje amerykańskie i drzewa losowe"
+output: html_document
+date: "`r Sys.Date()`"
+---
+
+#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
+
+# Wstęp
+
+Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Przedstawiamy przykłady numeryczne dla algorytmów wyceny opcji amerykańskich, opisanych w [1], w rozdziale 8.5 pt. "Stochastic Mesh Methods".
+
+# Opcje amerykańskie - programowanie dynamiczne
+
+Znajdźmy wartość $V_0$ opcji w chwili $t_0=0$. Niech $h_i$ oznacza zdyskontowaną wypłatę z opcji w chwili $t_i$, zwaną też wewnętrzną wartością (*intrinsic value*) opcji. Ponieważ opcję amerykańską możemy w każdej chwili zrealizować (otrzymując $h_i$) lub czekać, jej wartość jest nie mniejsza od wartości wewnętrznej.
+
+Zdyskontowana wartość $V_i(X_i)$ opcji w chwili $t_i$ na rynku znajdującym się w stanie $X_i$ (w ogólności, $X_i$ jest wektorem zawierającym ceny instrumentów, losowe stopy procentowe $r$, poziom zmienności rynku $\sigma$, itd.), jest dana równaniem rekurencyjnym (patrz [1], równania (8.6)-(8.7)):
+
+$$
+V_m(x) = h_m(x),\\
+V_{i-1}(x) = \max\{ h_{i-1}(x), \; C_{i-1}(x) \},\quad 1\le i\le m,\\
+\text{gdzie}\quad 
+C_{i-1}(x) = E[V_i(X_i) \;|\; X_{i-1}=x].
+$$
+
+Powyższe wzory definiują obwiednię Snella $V_i(X_i)$ ciągu $h_i(X_i)$, czyli najmniejszy nadmartyngał dominujący funkcję wypłaty. Z teorii optymalnego stopowania (p. [2], dodatek F.2, Twierdzenie 3) wiadomo, że
+
+$$
+V_0(X_0) = Eh_{\tau^*}(X_{\tau^*}) = \sup_{\tau\in\Theta} Eh_{\tau}(X_{\tau}),
+$$
+
+gdzie $\Theta$ jest zbiorem wszystkich momentów stopu o wartościach w zbiorze $\{0,1,\ldots,m\}$.
+
+Wyznaczymy dwa estymatory, "górny" $\hat V$ i "dolny" $\hat v$:
+
+$$
+E\hat V_0 \ge V_0(X_0) \ge E\hat v_0.
+$$
+
+# Estymator górny
+
+Estymator górny wyznaczymy wg przepisu (Glasserman, 8.3.1):
+
+![](images/Screenshot%202022-12-07%20at%2015.55.27.png)
+
+![](images/Screenshot%202022-12-07%20at%2015.55.39.png)
+
+# Założenia o siatce losowej
+
+![](images/Screenshot%202022-12-07%20at%2015.56.26.png)
+
+![](images/Screenshot%202022-12-08%20at%2011.41.02.png)
+
+# Estymator dolny - stopowanie suboptymalne
+
+![](images/Screenshot%202022-12-07%20at%2015.57.20.png)
+
+![](images/Screenshot%202022-12-07%20at%2015.57.44.png)
+
+![](images/Screenshot%202022-12-07%20at%2015.58.00.png)
+
+# Konstrukcja siatki i iloraz wiarygodności
+
+![](images/Screenshot%202022-12-07%20at%2015.58.27.png)
+
+![](images/Screenshot%202022-12-07%20at%2015.59.10.png)
+
+![](images/Screenshot%202022-12-07%20at%2015.59.20.png)
+
+![](images/Screenshot%202022-12-07%20at%2015.59.42.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.00.02.png)
+
+# Wagi estymatora dolnego
+
+![](images/Screenshot%202022-12-07%20at%2016.00.30.png)
+
+# Przykład numeryczny - opcje amerykańskie dla średniej geometrycznej z siedmiu aktywów
+
+![](images/Screenshot%202022-12-07%20at%2016.13.54.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.01.11.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.01.23.png)
+
+![](images/Screenshot%202022-12-07%20at%2016.14.04.png)
+
+# Literatura:
+
+[1] Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer, 2003
+
+[2] J. Jakubowski, R. Sztencel, *Wstęp do teorii prawdopodobieństwa*, Wyd. 4. SCRIPT, Warszawa, 2010
