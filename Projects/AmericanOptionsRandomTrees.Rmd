@@ -101,23 +101,6 @@ Pomocny będzie przykład na poniższym rysunku, gdzie przyjęto dla uproszczeni
 ![](images/Glasserman_Fig_8.3.png)
 
 ```{r}
-# Dla rozgrzewki, napiszmy funkcję, która losuje z N(0,1) i zwraca wynik - gdy n=4, 
-# zaś dla n<4 - wywołuje samą siebie dwukrotnie z parametrem (n+1) i uśrednia wynik. 
-# Test: wywołać funkcję dla n = 0.
-m = 4
-f = function(n) {
-  if (n == m) {
-    return (rnorm(1))
-  } else {
-    f1 = f(n+1)
-    f2 = f(n+1)
-    return ((f1+f2)/2)
-  }
-}
-print(f(0))
-```
-
-```{r}
 m = 5
 b = 10
 r = 0.05
