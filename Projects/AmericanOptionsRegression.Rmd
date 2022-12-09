@@ -23,7 +23,7 @@ V_{i-1}(x) = \max\{ h_{i-1}(x), \; C_{i-1}(x) \},\quad 1\le i\le m,\\
 C_{i-1}(x) = E[V_i(X_i) \;|\; X_{i-1}=x].
 $$
 
-Powyższe wzory definiują obwiednię Snella $V_i(X_i)$ ciągu $h_i(X_i)$, czyli najmniejszy nadmartyngał dominujący funkcję wypłaty. Z teorii optymalnego stopowania (p. [2], dodatek F.2, Twierdzenie 3) wiadomo, że 
+Powyższe wzory definiują obwiednię Snella $V_i(X_i)$ ciągu $h_i(X_i)$, czyli najmniejszy nadmartyngał dominujący funkcję wypłaty. Z teorii optymalnego stopowania (p. [2], dodatek F.2, Twierdzenie 3) wiadomo, że
 
 $$
 V_0(X_0) = Eh_{\tau^*}(X_{\tau^*}) = \sup_{\tau\in\Theta} Eh_{\tau}(X_{\tau}),
@@ -36,7 +36,6 @@ Wyznaczymy dwa estymatory, "górny" $\hat V$ i "dolny" $\hat v$:
 $$
 E\hat V_0 \ge V_0(X_0) \ge E\hat v_0.
 $$
-
 
 # Metoda regresji - model funkcji kontynuacji
 
@@ -82,7 +81,7 @@ Podsumowując, realizujemy następujący algorytm.
         $$
 4.  Obliczamy $\hat V_0 = (\hat V_{11}+\ldots+\hat V_{1b})/b$.
 
-Wariant powyższego algorytmu, proponowany przez Longstaffa i Schwartza w [3], polega na modyfikacji 3.2. do postaci:
+Wariant powyższego algorytmu (,,LSM''), proponowany przez Longstaffa i Schwartza w [3], polega na modyfikacji 3.2. do postaci:
 
 $$
 \hat V_{ij} = \begin{cases} h_i(X_{ij}),\quad & h_i(X_{ij})\ge \hat C_i(X_{ij});\\ 
@@ -90,23 +89,98 @@ $$
 \end{cases}
 $$
 
-# Estymator dolny - stopowanie suboptymalne
+# Estymator dolny - stopowanie nieoptymalne
 
-![](images/Screenshot%202022-12-07%20at%2018.19.21.png)
+Zauważmy, że po wyznaczeniu współczynników $\hat\beta_{ir}$ dysponujemy pewnym przybliżeniem funkcji kontynuacji $\hat C_i(x)$, dla każdego kroku czasowego $i$ oraz dla każdego stanu rynku \$x\$. Pozwala nam to zdefiniować nieoptymalny moment stopu $\hat\tau$ następująco:
+
+$$
+\hat\tau  = \min\{ i\::\: h_i(X_i) \ge \hat C_i(X_i) \},
+$$
+
+czyli jako pierwszy moment, w którym opłaca się bardziej zrealizować opcję, niż ją zachować (kontynuować).
+
+Ów nieoptymalny moment stopu daje nam w wyniku estymator dolny, jako:
+
+$$
+\hat v = h_{\hat\tau}(X_{\hat\tau}),
+$$
+
+wypłatę w chwili $\hat\tau$.
 
 # Przykład: amerykańska opcja maksimum
 
-![](images/Screenshot%202022-12-07%20at%2018.19.58.png)
+Rozważmy dwa aktywa, których ceny, $S^1$ i \$S\^2\$, ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, z parametrami: $r=0.05$, $\delta=0.1$ ($\delta$ to stopa dywidendy) oraz zmiennością $\sigma=0.2$.
 
-![](images/Screenshot%202022-12-07%20at%2018.20.09.png)
+Procesy $S^k$, $k=1,2$, spełniają więc równania:
+
+$$
+dS^k = (r-
+\delta)dt + \sigma dW^k,
+\qquad k=1,2,
+$$
+
+gdzie procesy Wienera $W^1,W^2$ są niezależne; co modelujemy wg schematu Eulera:
+
+$$
+S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt 
++\sigma\sqrt{dt}Z^k_i), \\
+\qquad k=1,2,
+\quad Z^1_0,Z^2_0,Z^1_1,Z^2_1,\ldots\text{niezal. o jednakowym rozk.}\ N(0,1).
+$$
+
+Niech ponadto zdyskontowaną funkcją wypłaty będzie
+
+$$
+h_i(S^1_t,S^2_t) = (\max\{S^1_t,S^2_t\} - K)_+. 
+$$
+
+Weźmy $S^1_0=S^2_0$ oraz $K = 100$, zaś $T=3$. Przypuśćmy, że opcję można zrealizować w dziewięciu terminach (jest to więc opcja *bermudzka*):
+
+$$
+t_i = i/3,\qquad i=1,2,\ldots,9.
+$$
+
+Cena dokładna tej opcji wynosi (około):
+
+$$
+V_0 = \begin{cases}
+13.9,\quad &\text{gdy}\; S^1_0=S^2_0=100,\\
+8.08,\quad &\text{gdy}\; S^1_0=S^2_0=110,\\
+21.34,\quad &\text{gdy}\; S^1_0=S^2_0=90.\\
+\end{cases}
+$$
+
+Jako funkcje bazowe $\psi_r$ wybieramy funkcje cen $S^k$, tj. wybieramy różne zestawy funkcji $\psi_r(x)$, pamiętając, że nasz stan rynku jest dwuwymiarowy: $x=(x_1,x_2)$. Bierzemy $b=4000$. Odchylenie standardowe wszystkich trzech estymatorów: $\hat V$, dolnego $\hat v$ oraz estymatora LSM, wyznaczamy na podstawie $100$ replikacji każdego z nich.
+
+Listy funkcji bazowych w tej tabeli, należy rozumieć następująco. Funkcje bazowe (w pierwszym wierszu tabeli) $1$, $S_i$, $S_i^2$, $S_i^3$ oznaczają, że bierzemy $M=7$ funkcji $\psi_r$:
+
+$$
+\psi_1(x_1,x_2) = 1,\\
+\psi_2(x_1,x_2) = x_1,\quad
+\psi_3(x_1,x_2) = x_2,\\
+\psi_3(x_1,x_2) = x_1^2,\quad
+\psi_4(x_1,x_2) = x_2^2,\\
+\psi_5(x_1,x_2) = x_1^3,\quad
+\psi_6(x_1,x_2) = x_2^3.
+$$
 
 ![](images/Screenshot%202022-12-07%20at%2018.20.17.png)
 
+Natomiast wyniki naszej implementacji metody regresji są następujące.
+
+```{r}
+
+```
+
+Wyniki porównawcze, dla $S^k_0=90$ oraz $110$, zawarte są w [1] w tabeli 8.2, poniżej ($90$ z lewej, $110$ z prawej):
+
 ![](images/Screenshot%202022-12-07%20at%2018.20.30.png)
 
-![](images/Screenshot%202022-12-07%20at%2018.20.56.png)
+Natomiast wyniki naszej implementacji metody regresji są następujące.
 
-# Przykład numeryczny
+```{r}
+
+```
 
 # Literatura:
 
@@ -115,4 +189,3 @@ $$
 [2] J. Jakubowski, R. Sztencel, *Wstęp do teorii prawdopodobieństwa*, Wyd. 4. SCRIPT, Warszawa, 2010
 
 [3] Longstaff, F.A., and Schwartz, E.S. (2001) Valuing American options by simulation: a simple least-squares approach, *Review of Financial Studies* 14:113-147.
-
