@@ -92,11 +92,22 @@ $$
 E\hat V_0 \ge V_0(S_0) \ge E\hat v_0.
 $$
 
-Estymator górny wyznaczymy wg przepisu (Glasserman, 8.3.1):
+Niech $\hat V_i^{j_1\cdots j_i}$ będzie wartością estymatora górnego w węźle $X_i^{j_1\cdots j_i}$. W węzłach końcowych, czyli dla $t=t_m$, definiujemy:
 
-![](images/Glasserman_8.19_8.20.png)
+$$
+\hat V_m^{j_1\cdots j_m} = \tilde h_m(X_m^{j_1\cdots j_m}).
+$$
 
-Pomocny będzie przykład na poniższym rysunku, gdzie przyjęto dla uproszczenia $r=0$ oraz $h_i(x) = (x - 100)_+$:
+Przez indukcję wsteczną, obliczamy następnie:
+
+$$
+\hat V_i^{j_1\cdots j_i} = \max\left\{ 
+\tilde h_i(X_i^{j_1\cdots j_i}),\; 
+\exp(-r(t_{i+1}-t_i)) \frac1b \sum_{j=1}^b \hat V_{i+1}^{j_1\cdots j_ij}
+\right\}.
+$$
+
+Pomocny, w zrozumieniu definicji $\hat V_i^{j_1\cdots j_i}$, będzie przykład na poniższym rysunku, gdzie przyjęto dla uproszczenia $r=0$, $b=3$, oraz funkcję wypłaty $\tilde h_i(x) = (x - 100)_+$ (a więc dla opcji kupna):
 
 ![](images/Glasserman_Fig_8.3.png)
 
