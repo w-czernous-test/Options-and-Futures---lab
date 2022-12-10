@@ -61,17 +61,90 @@ $$
 
 # Estymator górny
 
-Estymator górny wyznaczymy wg przepisu (Glasserman, 8.3.1):
+Oznaczmy przez $X_{ij}$ węzeł naszej siatki, a dokładnie $j$-ty węzeł związany z $i$-tym momentem, $t_i$, w którym można zrealizować opcję, gdzie $i=1, \ldots,m$, zaś $j=1,\ldots,b$. Zakładamy oczywiście, że
 
-![](images/Screenshot%202022-12-07%20at%2015.55.27.png)
+$$
+t_0<t_1<\ldots<t_m,
+$$
 
-![](images/Screenshot%202022-12-07%20at%2015.55.39.png)
+gdzie $t_0$ jest chwilą obecną, dla której mamy dodatkowy, pojedynczy węzeł siatki, $X_0$.
+
+Będziemy używać symbolu $\hat V_{ij}$ dla przybliżonej wartości opcji w tym węźle, wyliczonej następująco metodą rekursji wstecznej. W węzłach końcowych ($i=m$), definiujemy $\hat V_{mj} = \tilde h_{m}(X_{mj})$. Następnie, definiujemy
+
+$$
+\hat V_{ij} = \max\left\{
+\tilde h_i(X_{ij}),
+\frac1b \sum_{k=1}^b 
+  W^i_{jk} D_{i,i+1}(X_{i+1,k}) \hat V_{i+1,k},
+\right\}
+$$
+
+dla pewnych wartości wagowych $W^i_{jk}$.
+
+Na koniec, w węźle $X_0$ definiujemy
+
+$$
+\hat V_0 = 
+\frac1b \sum_{k=1}^b 
+  D_{0,1}(X_{1,k}) \hat V_{1,k},
+$$
+
+bądź też maksimum z tego i z $h_0(X_0)$, gdy dopuszczamy możliwość realizacji opcji w chwili $t_0$.
+
+Głównym zagadnieniem w tej metodzie jest odpowiedni wybór współczynników wagowych $W^i_{jk}$. Jest to ściśle związane z metodą otrzymywania kolejnych węzłów $X_{ij}$. Można np. losować niezależne trajektorie procesu Markowa $X_i$, ale nie jest to jedyny sposób generowania siatki.
 
 # Założenia o siatce losowej
 
-![](images/Screenshot%202022-12-07%20at%2015.56.26.png)
+Podamy teraz warunki dla siatki, których spełnianie wystarcza do konstrukcji estymatora ,,górnego'', tj. obciążonego dodatnio, i estymatora ,,dolnego'', tj. obciążonego ujemnie.
 
-![](images/Screenshot%202022-12-08%20at%2011.41.02.png)
+Niech wektor losowy
+
+$$
+X_i = (X_{i1},\ldots,X_{ib})
+$$
+
+będzie ,,stanem siatki'' w $i$-tym kroku czasowym, składającym się ze wszystkich węzłów przypisanych do tego samego momentu czasu, dla $i=1,\ldots,m$, i niech $X_0$ będzie ustalone. Zakładamy, że konstrukcja siatki spełnia warunek Markowa w następującym sensie:
+
+**(M1)** Dla każdego $i=1,\ldots,m-1$, i dla każdej funkcji mierzalnej $f$, zachodzi:
+
+$$
+E\Big[\, 
+ Y
+\:|\:
+X_0,\ldots,X_{i-1},X_i
+\,\Big]
+=
+E\Big[\, 
+ Y
+\:|\:
+X_i
+\,\Big],
+\quad\text{gdy}\;
+Y=f(X_{i+1},\ldots,X_{m}).
+$$
+
+Biorąc, po obu stronach powyższej równości, warunkową wartość oczekiwaną względem $\{X_{i-1},X_i\}$, otrzymujemy w szczególności $E[Y|X_{i-1},X_i]=E[Y|X_i]$, co zachodzi również dla $Y=f(X_i,X_{i+1},\ldots,X_{m})$, przy każdej mierzalnej funkcji $f$ (p. [3], wniosek 8.11 (i), str. 171).
+
+Zakładamy też, że spełnione jest założenie:
+
+**(M2)** Każda z wag $W^i_{jk}$ jest funkcją mierzalną $X_i$ i $X_{i+1}$.
+
+W szczególności, $W^i_{jk}$ może być mierzalną funkcją wartości $X_{ij}$ oraz $X_{i+1,k}$.
+
+Przypomnijmy, że $C_i(x)$ oznacza wartość oczekiwaną wypłaty z realizacji opcji w chwili późniejszej, tzw. wartość kontynuacji inwestycji. Następny warunek nakłada ograniczenia na wybór wag, tak by pozwalały poprawnie szacować tę wartość, przeciętnie:
+
+**(M3)** Dla każdego $i=1,\ldots,m-1$ i dla każdego $j=1,\ldots,b$,
+
+$$
+\frac1b \sum_{k=1}^b
+E\Big[
+W^i_{jk} D_{i,i+1}(X_{i+1,k}) V_{i+1}(X_{i+1,k})
+\:|\:
+X_i
+\Big]
+=
+C_i(X_{ij}).
+$$
 
 # Estymator dolny - stopowanie suboptymalne
 
@@ -129,3 +202,5 @@ $$
 [1] Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer, 2003
 
 [2] J. Jakubowski, R. Sztencel, *Wstęp do teorii prawdopodobieństwa*, Wyd. 4. SCRIPT, Warszawa, 2010
+
+[3] O. Kallenberg, *Foundations of Modern Probability*, Springer, 2021
