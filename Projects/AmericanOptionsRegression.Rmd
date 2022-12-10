@@ -91,7 +91,7 @@ $$
 
 # Estymator dolny - stopowanie nieoptymalne
 
-Zauważmy, że po wyznaczeniu współczynników $\hat\beta_{ir}$ dysponujemy pewnym przybliżeniem funkcji kontynuacji $\hat C_i(x)$, dla każdego kroku czasowego $i$ oraz dla każdego stanu rynku \$x\$. Pozwala nam to zdefiniować nieoptymalny moment stopu $\hat\tau$ następująco:
+Zauważmy, że po wyznaczeniu współczynników $\hat\beta_{ir}$ dysponujemy pewnym przybliżeniem funkcji kontynuacji $\hat C_i(x)$, dla każdego kroku czasowego $i$ oraz dla każdego stanu rynku $x$. Pozwala nam to zdefiniować nieoptymalny moment stopu $\hat\tau$ następująco:
 
 $$
 \hat\tau  = \min\{ i\::\: h_i(X_i) \ge \hat C_i(X_i) \},
@@ -109,7 +109,7 @@ wypłatę w chwili $\hat\tau$.
 
 # Przykład: amerykańska opcja maksimum
 
-Rozważmy dwa aktywa, których ceny, $S^1$ i \$S\^2\$, ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, z parametrami: $r=0.05$, $\delta=0.1$ ($\delta$ to stopa dywidendy) oraz zmiennością $\sigma=0.2$.
+Rozważmy dwa aktywa, których ceny, $S^1$ i $S\^2$, ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, z parametrami: $r=0.05$, $\delta=0.1$ ($\delta$ to stopa dywidendy) oraz zmiennością $\sigma=0.2$.
 
 Procesy $S^k$, $k=1,2$, spełniają więc równania:
 
