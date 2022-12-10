@@ -10,7 +10,7 @@ date: "`r Sys.Date()`"
 
 Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Przedstawiamy przykłady numeryczne dla algorytmów wyceny opcji amerykańskich, opisanych w [1], w rozdziale 8.6 pt. "Regression-Based Methods and Weights".
 
-# Opcje amerykańskie - programowanie dynamiczne
+# Opcje amerykańskie - optymalne stopowanie
 
 Znajdźmy wartość $V_0$ opcji w chwili $t_0=0$. Niech $h_i$ oznacza zdyskontowaną wypłatę z opcji w chwili $t_i$, zwaną też wewnętrzną wartością (*intrinsic value*) opcji. Ponieważ opcję amerykańską możemy w każdej chwili zrealizować (otrzymując $h_i$) lub czekać, jej wartość jest nie mniejsza od wartości wewnętrznej.
 
@@ -18,9 +18,9 @@ Zdyskontowana wartość $V_i(X_i)$ opcji w chwili $t_i$ na rynku znajdującym si
 
 $$
 V_m(x) = h_m(x),\\
-V_{i-1}(x) = \max\{ h_{i-1}(x), \; C_{i-1}(x) \},\quad 1\le i\le m,\\
+V_{i}(x) = \max\{ h_{i}(x), \; C_{i}(x) \},\quad 0\le i\le m-1,\\
 \text{gdzie}\quad 
-C_{i-1}(x) = E[V_i(X_i) \;|\; X_{i-1}=x].
+C_{i}(x) = E[V_{i+1}(X_{i+1}) \;|\; X_{i}=x].
 $$
 
 Powyższe wzory definiują obwiednię Snella $V_i(X_i)$ ciągu $h_i(X_i)$, czyli najmniejszy nadmartyngał dominujący funkcję wypłaty. Z teorii optymalnego stopowania (p. [2], dodatek F.2, Twierdzenie 3) wiadomo, że
@@ -30,6 +30,28 @@ V_0(X_0) = Eh_{\tau^*}(X_{\tau^*}) = \sup_{\tau\in\Theta} Eh_{\tau}(X_{\tau}),
 $$
 
 gdzie $\Theta$ jest zbiorem wszystkich momentów stopu o wartościach w zbiorze $\{0,1,\ldots,m\}$.
+
+# Programowanie dynamiczne
+
+Implementacje rozwiązań układu równań (1) zazwyczaj odnoszą się do jego równoważnej postaci, gdzie funkcje $\tilde h_i$ oraz $\tilde V_i$ nie są zdyskontowane (patrz [1], równania (8.4)-(8.5)):
+
+$$
+\tag{2}
+\tilde V_m(x) = \tilde h_m(x),\\
+\tilde V_{i}(x) = \max\{ \tilde h_{i}(x), \; E[D_{i,i+1}(X_{i+1})\tilde V_{i+1}(X_{i+1}) \;|\; X_{i}=x] \},\quad 0\le i\le m-1.
+$$
+
+Szukamy wtedy $\tilde V_0(X_0)=V_0(X_0)$. Czynnik $D_{i1,i+1}$ jest współczynnikiem dyskonta pomiędzy momentem $t_{i+1}$ a $t_{i}$ , czyli wartością, w momencie $t_{i}$, jednego dolara wypłacanego w przyszłej chwili $t_{i+1}$. Dla prostego modelu ze stałą stopą procentową $r$, jest to po prostu $\exp(-r(t_{i+1}-t_{i}))$.
+
+Równoważność sfomułowań (1) i (2) można zobaczyć, jeśli zauważymy, że
+
+$$
+V_i = \exp(-rt_i)\tilde V_i,
+\qquad 
+h_i = \exp(-rt_i)\tilde h_i.
+$$
+
+Zaletą sformułowania (2) jest to, że funkcja wypłaty $\tilde h_i$ jest zazwyczaj niezależna od indeksu $i$.
 
 Wyznaczymy dwa estymatory, "górny" $\hat V$ i "dolny" $\hat v$:
 
