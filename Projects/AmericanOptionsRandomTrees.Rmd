@@ -104,11 +104,11 @@ Przez indukcję wsteczną, obliczamy następnie:
 $$
 \hat V_i^{j_1\cdots j_i} = \max\left\{ 
 \tilde h_i(X_i^{j_1\cdots j_i}),\; 
-\exp(-r(t_{i+1}-t_i)) \frac1b \sum_{j=1}^b \hat V_{i+1}^{j_1\cdots j_ij}
+\frac1b \sum_{j=1}^b D_{i,i+1}\hat V_{i+1}^{j_1\cdots j_ij}
 \right\}.
 $$
 
-Pomocny, w zrozumieniu definicji $\hat V_i^{j_1\cdots j_i}$, będzie przykład na poniższym rysunku (zaczerpniętym z [1]), gdzie przyjęto dla uproszczenia $r=0$, $b=3$, oraz funkcję wypłaty $\tilde h_i(x) = (x - 100)_+$ (a więc dla opcji kupna):
+Pomocny, w zrozumieniu definicji $\hat V_i^{j_1\cdots j_i}$, będzie przykład na poniższym rysunku (zaczerpniętym z [1]), gdzie przyjęto dla uproszczenia $r=0$ (a zatem $D_{i,i+1}=1$), $b=3$, oraz funkcję wypłaty $\tilde h_i(x) = (x - 100)_+$ (opcja kupna):
 
 ![](images/Glasserman_Fig_8.3.png)
 
@@ -167,11 +167,11 @@ $$
 \begin{cases}
 \tilde h_i(X_i^{j_1\cdots j_i}),
 \quad &\text{gdy} \;
-\tfrac1{1-b}\sum_{j=1,j\neq k}^b \hat v_{i+1}^{j_1\cdots j_ij} 
+\tfrac1{1-b}\sum_{j=1,j\neq k}^b D_{i,i+1} \hat v_{i+1}^{j_1\cdots j_ij} 
 \le 
 \tilde h_i(X_i^{j_1\cdots j_i}),
 \\
-\hat v_{i+1}^{j_1\cdots j_ik} 
+D_{i,i+1} \hat v_{i+1}^{j_1\cdots j_ik} 
 \quad &\text{w przeciwnym przypadku;} 
 \end{cases}
 $$

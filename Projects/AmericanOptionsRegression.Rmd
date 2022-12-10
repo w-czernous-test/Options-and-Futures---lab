@@ -4,8 +4,6 @@ output: html_document
 date: "`r Sys.Date()`"
 ---
 
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
-
 # Wstęp
 
 Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Przedstawiamy przykłady numeryczne dla algorytmów wyceny opcji amerykańskich, opisanych w [1], w rozdziale 8.6 pt. "Regression-Based Methods and Weights".
@@ -64,36 +62,36 @@ $$
 Metody oparte na regresji zakładają, że funkcja kontynuacji $C_i$ jest kombinacją liniową pewnych funkcji bazowych:
 
 $$
-E[V_{i+1}(X_{i+1})|X_i=x] = \sum_{r=1}^M \beta_{ir}\psi_r(x).
+E[D_{i,i+1}(X_{i+1})\tilde V_{i+1}(X_{i+1})|X_i=x] = \sum_{r=1}^M \beta_{ir}\psi_r(x).
 $$
 
-Gdy ustalimy funkcje bazowe (przykładowy wybór funkcji bazowych przedstawimy poniżej), współczynniki kombinacji liniowej będzie można przybliżać, używając wartości funkcji w punktach siatki $(X_{ij},X_{i+1,j})$, dla $j=1,\ldots,b$. W praktyce, dokładne wartości $V_{i+1}$ są nieznane - zamiast nich używamy wartości przybliżonych $\hat V_{i+1}$.
+Gdy ustalimy funkcje bazowe (przykładowy wybór funkcji bazowych przedstawimy poniżej), współczynniki kombinacji liniowej będzie można przybliżać, używając wartości funkcji w punktach siatki $(X_{ij},X_{i+1,j})$, dla $j=1,\ldots,b$. W praktyce, dokładne wartości $\tilde V_{i+1}$ są nieznane - zamiast nich używamy wartości przybliżonych $\hat V_{i+1}$.
 
 Dlaczego regresja liniowa jest tu pomocna? Otóż, jak wiadomo ze statystyki, funkcja $r(t)=E(Y|X=t)$ minimalizuje błąd średniokwadratowy $E[(Y-r(X))^2]$. W tym wypadku, minimalizujemy
 
 $$
-E[(V_{i+1}(X_{i+1}) - C_i(X_i))^2].
+E[(D_{i,i+1}(X_{i+1})V_{i+1}(X_{i+1}) - C_i(X_i))^2].
 $$
 
 Ponieważ mamy $b$ próbek par $(X,Y)=(X_i,X_{i+1})$, więc staramy się zminimalizować (p. funkcja 'lm' w R):
 
 $$
 \frac1b \sum_{j=1}^b \left(
-\hat V_{i+1}(X_{i+1,j}) - \sum_{r=1}^M \hat\beta_{ir}\psi_r(X_{i,j})
+D_{i,i+1}(X_{i+1,j})\hat V_{i+1}(X_{i+1,j}) - \sum_{r=1}^M \hat\beta_{ir}\psi_r(X_{i,j})
 \right)^2.
 $$
 
 Podsumowując, realizujemy następujący algorytm.
 
 1.  Symulujemy $b$ niezależnych trajektorii $\{X_{1j},\ldots,X_{mj}\},\;j=1,\ldots,b$, łańcucha Markowa.
-2.  W węzłach końcowych, definiujemy $\hat V_{mj} = h_m(X_{mj}),\; j=1,\ldots,b$.
+2.  W węzłach końcowych, definiujemy $\hat V_{mj} = \tilde h_m(X_{mj}),\; j=1,\ldots,b$.
 3.  Stosujemy indukcję wsteczną: dla każdego $i=m-1,\ldots,1$:
     1.  dla danych wartości przybliżonych $\hat V_{i+1,j},\; j=1,\ldots,b$, używamy regresji liniowej ('lm') do wyznaczenia przybliżonych współczynników $\hat\beta_{ir}$ kombinacji liniowej;
 
     2.  definiujemy
 
         $$
-        \hat V_{ij} = \max\left\{ h_i(X_{ij}), \hat C_i(X_{ij}) \right\},\quad j=1,\ldots,b,
+        \hat V_{ij} = \max\left\{ \tilde h_i(X_{ij}), \hat C_i(X_{ij}) \right\},\quad j=1,\ldots,b,
         $$
 
         gdzie
@@ -103,20 +101,20 @@ Podsumowując, realizujemy następujący algorytm.
         $$
 4.  Obliczamy $\hat V_0 = (\hat V_{11}+\ldots+\hat V_{1b})/b$.
 
-Wariant powyższego algorytmu (,,LSM''), proponowany przez Longstaffa i Schwartza w [3], polega na modyfikacji 3.2. do postaci:
+Wariant powyższego algorytmu (,,LSM''), proponowany przez Longstaffa i Schwartza w [3], polega na modyfikacji punktu 3.2 algorytmu, do postaci:
 
 $$
-\hat V_{ij} = \begin{cases} h_i(X_{ij}),\quad & h_i(X_{ij})\ge \hat C_i(X_{ij});\\ 
-                           \hat V_{i+1,j},    & h_i(X_{ij})< \hat C_i(X_{ij}).
+\hat V_{ij} = \begin{cases} \tilde h_i(X_{ij}),\quad & \tilde h_i(X_{ij})\ge \hat C_i(X_{ij});\\ 
+                           D_{i,i+1}(X_{i+1,j})\hat V_{i+1,j},    & \tilde h_i(X_{ij})< \hat C_i(X_{ij}).
 \end{cases}
 $$
 
 # Estymator dolny - stopowanie nieoptymalne
 
-Zauważmy, że po wyznaczeniu współczynników $\hat\beta_{ir}$ dysponujemy pewnym przybliżeniem funkcji kontynuacji $\hat C_i(x)$, dla każdego kroku czasowego $i$ oraz dla każdego stanu rynku $x$. Pozwala nam to zdefiniować nieoptymalny moment stopu $\hat\tau$ następująco:
+Zauważmy, że po wyznaczeniu współczynników $\hat\beta_{ir}$ dysponujemy pewnym przybliżeniem funkcji kontynuacji $\hat C_i(x)$, dla każdego kroku czasowego $i$ oraz dla każdego stanu rynku $x$. Pozwala nam to zdefiniować nieoptymalny moment stopu $\tau$ następująco:
 
 $$
-\hat\tau  = \min\{ i\::\: h_i(X_i) \ge \hat C_i(X_i) \},
+\tau  = \min\{ i\::\: \tilde h_i(X_i) \ge \hat C_i(X_i) \},
 $$
 
 czyli jako pierwszy moment, w którym opłaca się bardziej zrealizować opcję, niż ją zachować (kontynuować).
@@ -124,14 +122,22 @@ czyli jako pierwszy moment, w którym opłaca się bardziej zrealizować opcję,
 Ów nieoptymalny moment stopu daje nam w wyniku estymator dolny, jako:
 
 $$
-\hat v = h_{\hat\tau}(X_{\hat\tau}),
+\hat v = D_{0,\tau}(X_{\tau})\tilde h_{\tau}(X_{\tau}),
 $$
 
-wypłatę w chwili $\hat\tau$.
+zdyskontowaną wypłatę w chwili $\tau$, gdzie współczynnik dyskonta w prostym modelu ze stałą stopą procentową $r$, wynosi
+
+$$
+D_{0,\tau}(X_{\tau}) = \exp(-r\tau).
+$$
 
 # Przykład: amerykańska opcja maksimum
 
-Rozważmy dwa aktywa, których ceny, $S^1$ i $S\^2$, ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, z parametrami: $r=0.05$, $\delta=0.1$ ($\delta$ to stopa dywidendy) oraz zmiennością $\sigma=0.2$.
+Rozważmy rynek ze stałą stopą procentową $r$ oraz dwoma aktywami, których ceny, $S^1$ i $S^2$, ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, z parametrami: $r=0.05$, $\delta=0.1$ ($\delta$ to stopa dywidendy) oraz zmiennością $\sigma=0.2$. Mamy więc stan rynku, który jest dwuwymiarowym wektorem:
+
+$$
+X_i = (S^1(t_i), S^2(t_i)).
+$$
 
 Procesy $S^k$, $k=1,2$, spełniają więc równania:
 
@@ -141,7 +147,7 @@ dS^k = (r-
 \qquad k=1,2,
 $$
 
-gdzie procesy Wienera $W^1,W^2$ są niezależne; co modelujemy wg schematu Eulera:
+gdzie procesy Wienera $W^1,W^2$ są niezależne; co modelujemy wg schematu Eulera (pisząc $S^k_i$ zamiast $S^k(t_i)$):
 
 $$
 S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt 
@@ -150,13 +156,13 @@ S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt
 \quad Z^1_0,Z^2_0,Z^1_1,Z^2_1,\ldots\text{niezal. o jednakowym rozk.}\ N(0,1).
 $$
 
-Niech ponadto zdyskontowaną funkcją wypłaty będzie
+Niech ponadto niezdyskontowaną funkcją wypłaty będzie
 
 $$
-h_i(S^1_t,S^2_t) = (\max\{S^1_t,S^2_t\} - K)_+. 
+\tilde h_i(X_i) = (\max\{S^1_i,S^2_i\} - K)_+. 
 $$
 
-Weźmy $S^1_0=S^2_0$ oraz $K = 100$, zaś $T=3$. Przypuśćmy, że opcję można zrealizować w dziewięciu terminach (jest to więc opcja *bermudzka*):
+Weźmy $S^1_0=S^2_0$ oraz $K = 100$, zaś $T=3$. Przypuśćmy, że opcję można zrealizować w dziewięciu terminach (jest to więc opcja *bermudzka*, tj. pośrednia między amerykańską - którą można realizować w dowolnej chwili - a europejską):
 
 $$
 t_i = i/3,\qquad i=1,2,\ldots,9.
@@ -198,13 +204,13 @@ Wyniki porównawcze, dla $S^k_0=90$ oraz $110$, zawarte są w [1] w tabeli 8.2, 
 
 ![](images/Screenshot%202022-12-07%20at%2018.20.30.png)
 
-Natomiast wyniki naszej implementacji metody regresji są następujące.
+W tym wypadku, odpowiednie wyniki naszej implementacji metody regresji są następujące.
 
 ```{r}
 
 ```
 
-# Literatura:
+# Literatura
 
 [1] Paul Glasserman, *Monte Carlo Methods in Financial Engineering*, Springer 2003
 
