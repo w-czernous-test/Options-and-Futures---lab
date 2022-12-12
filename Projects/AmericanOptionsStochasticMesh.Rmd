@@ -295,7 +295,11 @@ z cen owych siedmiu aktywów.
 Opcja wygasa po $T=1$ roku, i może być zrealizowana 
 w momentach będących wielokrotnościami wartości $0.1$,
 leżącymi w przedziale $[0,1]$.
+Wartość wzorcowa ceny tej opcji wynosi $3.27$.
 
+Ponieważ ceny aktywów ewoluują niezależnie, 
+gęstość prawdopodobieństwa przejścia będzie iloczynem gęstości 
+jednowymiarowych.
 
 ![](images/Screenshot%202022-12-07%20at%2016.01.11.png)
 
