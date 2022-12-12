@@ -67,17 +67,76 @@ Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje p
 
 # Estymatory nieobciążone - warunki dostateczne
 
-Załóżmy, że pochodna $Y'(\theta)$ istnieje prawie na pewno. Podamy niżej warunki dostateczne na to, by zachodziła równość (\*). Ograniczymy się do ...
+Załóżmy, że pochodna $Y'(\theta)$ istnieje prawie na pewno. Podamy niżej warunki dostateczne na to, by zachodziła równość (\*). Ograniczymy się do funkcji wypłaty zależnych jednynie od ceny instrumentu lub instrumentów bazowych w skończonej liczbie chwil czasu. Zamiast rozróżniać między jednym aktywem bazowym a kilkoma, przyjmijmy, że wypłata z opcji jest funkcją wektora losowego $X(\theta)=(X_1(\theta),\ldots,X_m(\theta))$, zależnego od parametru $\theta$. A zatem
 
-![](images/Screenshot%202022-12-07%20at%2011.17.02.png)
+$$
+Y(\theta)
+=
+f(X_1(\theta),\ldots,X_m(\theta)),
+$$
 
-![](images/Screenshot%202022-12-07%20at%2011.17.23.png)
+dla pewnej funkcji $f:R^m\to R$, odpowiadającej konkretnej opcji.
 
-![](images/Screenshot%202022-12-07%20at%2011.18.29.png)
+Zakładamy, że zachodzą następujące warunki.
 
-![](images/Screenshot%202022-12-07%20at%2011.20.03.png)
+**(A1)** W każdym punkcie $\theta\in\Theta$, $X'_i(\theta)$ istnieje z prawdopodobieństwem $1$, dla każdego $i=1,\ldots,m$.
 
-...
+Jeśli $f$ jest różniczkowalna, wówczas $Y$ dziedziczy własność różniczkowalności od zmiennej $X$, przy założeniu (A1). Funkcje wypłaty bywają nieróżniczkowalne, ale pojedyncze punkty nieróżniczkowalności $f$ zazwyczaj można zignorować, ponieważ proces $X$ ,,trafia'' w te punkty z prawdopodobieństwem zero. Dokładnie rzecz ujmując, jeśli przez $D_f\subset R^m$ oznaczymy zbiór punktów różniczkowalności $f$, to wymagamy, by
+
+**(A2)** $P(X(\theta)\in D_f) = 1$ dla każdego $\theta\in\Theta$.
+
+W takim wypadku, $Y'(\theta)$ istnieje z prawdopodobieństwem $1$, i jest dane wzorem
+
+$$
+Y'(\theta) = \sum_{i=1}^m
+\frac{\partial f}{\partial x_i}
+(X(\theta))X'_i(\theta).
+$$
+
+**(A3)** Istnieje stała $k_f$, taka że dla każdego $x$, $y\in R^m$,
+
+$$
+|f(x)  - f(y)| \le k_f\|x-y\|;
+$$
+
+to znaczy, $f$ jest Lipschitzowska.
+
+Standardowa opcja europejska, azjatycka, opcje typów: *lookback*, *spread*, maksimum - wszystkie one spełniają powyższy warunek (tak, jak każda opcja o wypłacie będącej złożeniem przekształceń liniowych i funkcji $\min$ i $\max$); natomiast opcja binarna go nie spełnia.
+
+O procesie $X(\theta)$ zakładamy podobnie:
+
+**(A4)** Istnieją zmienne losowe $\kappa_i$, $i=1,\ldots,m$, takie że dla każdego $\theta_1$, $\theta_2\in\Theta$,
+
+$$
+|X_i(\theta_2)-X_i(\theta_1)| \le \kappa_i|\theta_2-\theta_1|,
+$$
+
+oraz $E\kappa_i<\infty$, $i=1,\ldots,m$.
+
+Warunki (A3) i (A4) łącznie implikują Lipschitzowskość $Y$ prawie na pewno, ponieważ własność Lipschitza zachowywana jest przy składaniu funkcji. Mamy więc
+
+$$
+|Y(\theta_2) - Y(\theta_1)|
+\le
+\kappa_Y
+|\theta_2-\theta_1|,
+$$
+
+gdzie $\kappa_Y=k_f\sum_i \kappa_i$ i zachodzi $E\kappa_Y<\infty$. Zauważmy, że
+
+$$
+\left|\frac{Y(\theta+h)-Y(\theta)}{h}\right|
+\le
+\kappa_Y,
+$$
+
+skąd wynika własność (\*) na mocy twierdzenia Lebesgue'a o zbieżności zmajoryzowanej.
+
+Podsumowując, warunki (A1)-(A4) wystarczają, by zapewnić nieobciążoność estymatora $Y'(\theta)$.
+
+# Przykład numeryczny - opcje europejskie
+
+Wyliczymy współczynniki: delta, vega, rho, theta, dla europejskich opcji kupna z uwzględnieniem dywidend.
 
 ```{r}
 # Parametry wspólne:
@@ -88,13 +147,7 @@ sigma = .30
 T = 1
 h = 0.01
 n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
-```
 
-# Przykład numeryczny - opcje europejskie
-
-Wyliczymy współczynniki: delta, vega, rho, theta, dla europejskich opcji kupna z uwzględnieniem dywidend.
-
-```{r}
 
 ```
 
