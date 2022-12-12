@@ -177,17 +177,22 @@ niezależnie od ścieżek użytych ewentualnie do konstrukcji siatki.
 Zdefiniujmy następnie moment stopu:
 
 $$
-\tau = \min\{
- i \::\:
- \tilde h_i(X_i) 
- \ge
- \hat C_i(X_i)
-\};
+\tau  = \min\{ i\::\: \tilde h_i(X_i) \ge \hat C_i(X_i) \},
 $$
 
+czyli jako pierwszy moment, w którym opłaca się bardziej zrealizować opcję, niż ją zachować (kontynuować).
 
+Ów nieoptymalny moment stopu daje nam w wyniku estymator dolny, jako:
 
-![](images/Screenshot%202022-12-07%20at%2015.58.00.png)
+$$
+\hat v = D_{0,\tau}(X_{\tau})\tilde h_{\tau}(X_{\tau}),
+$$
+
+zdyskontowaną wypłatę w chwili $\tau$, gdzie współczynnik dyskonta w prostym modelu ze stałą stopą procentową $r$, wynosi
+
+$$
+D_{0,\tau}(X_{\tau}) = \exp(-r\tau).
+$$
 
 # Konstrukcja siatki i iloraz wiarygodności
 
