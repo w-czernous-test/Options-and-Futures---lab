@@ -148,9 +148,44 @@ $$
 
 # Estymator dolny - stopowanie suboptymalne
 
-![](images/Screenshot%202022-12-07%20at%2015.57.20.png)
+Estymator dolny konstruujemy przy pomocy reguły stopowania, którą podpowiada nam siatka. 
+W tym celu musimy rozszerzyć współczynniki wagowe $W^i_{jk}$ 
+ze zbioru $\{X_{i1},\ldots,X_{ib}\}$ na wszystkie punkty przestrzeni stanów 
+w chwili $i$-tej.
+Przypuśćmy, że mamy takie rozszerzenie, nazwijmy je $W^i_k(x)$; 
+jest to waga łącząca stan $x$ w chwili $i$, z węzłem $X_{i+1,k}$.
+Dzięki tej funkcji możemy zdefiniować wartość kontynuacji dla $i=1,\ldots,m-1$
+na całej przestrzeni stanów, a nie tylko w węzłach siatki: 
 
-![](images/Screenshot%202022-12-07%20at%2015.57.44.png)
+$$
+\hat C_i(x)
+=
+\frac1b\sum_{k=1}^b
+W^i_{k}(x) D_{i,i+1}(X_{i+1,k}) \hat V_{i+1,k}
+$$
+
+Jeśli założymy dodatkowo, że $W_k^i(X_{ij}) = W^i_{jk}$,
+wówczas $\hat C_i(X_{ij})$ 
+jest wartością funkcj kontynuacji w węźle siatki $X_{ij}$,
+tzn. mamy interpolację $\hat C_i$ z węzłów siatki na całą przestrzeń stanów.
+Definiujemy $\hat C_m\equiv 0$.
+
+Dla ustalonej siatki, możemy teraz wykonać symulację ścieżki 
+$X_0$, $X_1$, $\ldots$, $X_m$ naszego procesu Markowa, 
+reprezentującego ewolucję stanu rynku, 
+niezależnie od ścieżek użytych ewentualnie do konstrukcji siatki.
+Zdefiniujmy następnie moment stopu:
+
+$$
+\tau = \min\{
+ i \::\:
+ \tilde h_i(X_i) 
+ \ge
+ \hat C_i(X_i)
+\};
+$$
+
+
 
 ![](images/Screenshot%202022-12-07%20at%2015.58.00.png)
 
