@@ -148,14 +148,7 @@ $$
 
 # Estymator dolny - stopowanie suboptymalne
 
-Estymator dolny konstruujemy przy pomocy reguły stopowania, którą podpowiada nam siatka. 
-W tym celu musimy rozszerzyć współczynniki wagowe $W^i_{jk}$ 
-ze zbioru $\{X_{i1},\ldots,X_{ib}\}$ na wszystkie punkty przestrzeni stanów 
-w chwili $i$-tej.
-Przypuśćmy, że mamy takie rozszerzenie, nazwijmy je $W^i_k(x)$; 
-jest to waga łącząca stan $x$ w chwili $i$, z węzłem $X_{i+1,k}$.
-Dzięki tej funkcji możemy zdefiniować wartość kontynuacji dla $i=1,\ldots,m-1$
-na całej przestrzeni stanów, a nie tylko w węzłach siatki: 
+Estymator dolny konstruujemy przy pomocy reguły stopowania, którą podpowiada nam siatka. W tym celu musimy rozszerzyć współczynniki wagowe $W^i_{jk}$ ze zbioru $\{X_{i1},\ldots,X_{ib}\}$ na wszystkie punkty przestrzeni stanów w chwili $i$-tej. Przypuśćmy, że mamy takie rozszerzenie, nazwijmy je $W^i_k(x)$; jest to waga łącząca stan $x$ w chwili $i$, z węzłem $X_{i+1,k}$. Dzięki tej funkcji możemy zdefiniować wartość kontynuacji dla $i=1,\ldots,m-1$ na całej przestrzeni stanów, a nie tylko w węzłach siatki:
 
 $$
 \hat C_i(x)
@@ -164,17 +157,9 @@ $$
 W^i_{k}(x) D_{i,i+1}(X_{i+1,k}) \hat V_{i+1,k}
 $$
 
-Jeśli założymy dodatkowo, że $W_k^i(X_{ij}) = W^i_{jk}$,
-wówczas $\hat C_i(X_{ij})$ 
-jest wartością funkcj kontynuacji w węźle siatki $X_{ij}$,
-tzn. mamy interpolację $\hat C_i$ z węzłów siatki na całą przestrzeń stanów.
-Definiujemy $\hat C_m\equiv 0$.
+Jeśli założymy dodatkowo, że $W_k^i(X_{ij}) = W^i_{jk}$, wówczas $\hat C_i(X_{ij})$ jest wartością funkcj kontynuacji w węźle siatki $X_{ij}$, tzn. mamy interpolację $\hat C_i$ z węzłów siatki na całą przestrzeń stanów. Definiujemy $\hat C_m\equiv 0$.
 
-Dla ustalonej siatki, możemy teraz wykonać symulację ścieżki 
-$X_0$, $X_1$, $\ldots$, $X_m$ naszego procesu Markowa, 
-reprezentującego ewolucję stanu rynku, 
-niezależnie od ścieżek użytych ewentualnie do konstrukcji siatki.
-Zdefiniujmy następnie moment stopu:
+Dla ustalonej siatki, możemy teraz wykonać symulację ścieżki $X_0$, $X_1$, $\ldots$, $X_m$ naszego procesu Markowa, reprezentującego ewolucję stanu rynku, niezależnie od ścieżek użytych ewentualnie do konstrukcji siatki. Zdefiniujmy następnie moment stopu:
 
 $$
 \tau  = \min\{ i\::\: \tilde h_i(X_i) \ge \hat C_i(X_i) \},
@@ -196,10 +181,7 @@ $$
 
 # Konstrukcja siatki i iloraz wiarygodności
 
-Niech przestrzenią stanów dla łańcucha Markowa $X_0$, $X_1$,
- $\ldots$, $X_m$ będzie przestrzeń $R^d$.
-Załóżmy, że dla tego łańcucha, prawdopodobieństwa przejścia do kolejnego stanu 
-mają rozkład z gęstościami $f_1$, $\ldots$, $f_m$:
+Niech przestrzenią stanów dla łańcucha Markowa $X_0$, $X_1$, $\ldots$, $X_m$ będzie przestrzeń $R^d$. Załóżmy, że dla tego łańcucha, prawdopodobieństwa przejścia do kolejnego stanu mają rozkład z gęstościami $f_1$, $\ldots$, $f_m$:
 
 $$
 P(X_i\in A|X_{i-1}=x)
@@ -218,62 +200,43 @@ E[V_{i+1}(X_{i+1})\,|\,X_i=x]
 \int V_{i+1}(x)f_{i+1}(x,y)\,dy,
 $$
 
-całka względem gęstości prawdopodobieństwa przejścia. 
-Głównym zadaniem wag w siatce jest umożliwienie oszacowania tych wartości.
+całka względem gęstości prawdopodobieństwa przejścia. Głównym zadaniem wag w siatce jest umożliwienie oszacowania tych wartości.
 
-Będziemy rozważać następującą metodę generowania $i+1$-ych węzłów siatki,
-mając dane węzły $i$-te (dla $i$-tej chwili czasu).
-Losujemy węzeł $X_{i\ell}$ spośród węzłów $X_{i1}$, $\ldots$, $X_{ib}$, 
-z jednakowym prawdopodobieństwem.
-Następnie generujemy próbkę z rozkładu o gęstości $f_{i+1}(X_{i\ell},\cdot)$.
-Powtarzamy proces, aż uzyskamy $b$ wartości węzłów dla chwili $i+1$;
-za każdym razem losując (,,ze zwracaniem'') spośród $X_{i1}$, $\ldots$, $X_{ib}$.
-Konstrukcja ta spełnia warunek (M1).
-Dla danego wektora $X_i=(X_{i1},\ldots,X_{ib})$, węzły dla chwili $i+1$ 
-są niezależnymi zmiennymi losowymi o jednakowym rozkładzie z gęstością
+Będziemy rozważać następującą metodę generowania $i+1$-ych węzłów siatki, mając dane węzły $i$-te (dla $i$-tej chwili czasu). Losujemy węzeł $X_{i\ell}$ spośród węzłów $X_{i1}$, $\ldots$, $X_{ib}$, z jednakowym prawdopodobieństwem. Następnie generujemy próbkę z rozkładu o gęstości $f_{i+1}(X_{i\ell},\cdot)$. Powtarzamy proces, aż uzyskamy $b$ wartości węzłów dla chwili $i+1$; za każdym razem losując (,,ze zwracaniem'') spośród $X_{i1}$, $\ldots$, $X_{ib}$. Konstrukcja ta spełnia warunek (M1). Dla danego wektora $X_i=(X_{i1},\ldots,X_{ib})$, węzły dla chwili $i+1$ są niezależnymi zmiennymi losowymi o jednakowym rozkładzie z gęstością
 
 $$
 \frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell},\cdot)
 ,
 $$
 
-średnią z gęstości prawdopodobieństw przejścia z węzłów dla chwili $i$.
-Zdefiniujmy teraz wagi następująco:
+średnią z gęstości prawdopodobieństw przejścia z węzłów dla chwili $i$. Zdefiniujmy teraz wagi następująco:
 
 $$
 W^i_{jk}
 =
-\frac{%
-f_{i+1}(X_{ij},X_{i+1,k})
-}{%-------------------------
-\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})
-}.
+\frac{f_{i+1}(X_{ij},X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
 $$
 
 # Wagi estymatora dolnego
 
-Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ przez zmienną $x$:
-$$
+Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ przez zmienną $x$: $$
 W^i_{k}(x)
 =
-\frac{%
-f_{i+1}(x,X_{i+1,k})
-}{%-------------------------
-\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})
-}.
+\frac{f_{i+1}(x,X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
 $$
-
 
 # Przykład numeryczny - opcje amerykańskie dla średniej geometrycznej z siedmiu aktywów
 
 ![](images/Screenshot%202022-12-07%20at%2016.13.54.png)
 
-W niniejszym przykładzie zakładamy, że ceny siedmiu aktywów, $X=(S^1,S^2,\ldots,S^7)$ ewoluują niezależnie, zgodnie z równaniem:
+W niniejszym przykładzie zakładamy, że ceny siedmiu aktywów, $X=(S^1,S^2,\ldots,S^7)$ ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, to znaczy każda z cen ma rozkład logarytmiczno-normalny (patrz [4]):
 
 $$
-dS^k = (r-
-\delta)dt + \sigma dW^k,
-\qquad k=1,2,\ldots,7,
+S^k(t) = S^k(0)\exp\Big(
+(r-\delta-\tfrac12\sigma^2)t + \sigma W^k_t\Big),
+\qquad 
+t\in[0,T],\;
+k=1,2,\ldots,7,
 $$
 
 gdzie procesy Wienera $W^1,\ldots,W^7$ są niezależne; co modelujemy wg schematu Eulera:
@@ -282,30 +245,47 @@ $$
 S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt 
 +\sigma\sqrt{dt}Z^k), \\
 \qquad k=1,\ldots,7,
-\quad Z^k \sim N(0,1).
+\quad Z^k \sim N(0,1),
+\quad
+dt = t_{i+1}-t_i.
 $$
 
-Przyjmijmy, że wartości parametrów są następujące.
-Każde z siedmiu aktywów ma cenę początkową $100$,
-zaś cena wykonania $K$ również wynosi $100$.
-Stopa procentowa $r=0.03$, stopa dywidendy $\delta=0.05$,
-zmienność $\sigma=0.40$. 
-Rozważmy amerykańską opcję kupna dla średniej geometrycznej 
-z cen owych siedmiu aktywów. 
-Opcja wygasa po $T=1$ roku, i może być zrealizowana 
-w momentach będących wielokrotnościami wartości $0.1$,
-leżącymi w przedziale $[0,1]$.
-Wartość wzorcowa ceny tej opcji wynosi $3.27$.
+Przyjmijmy, że wartości parametrów są następujące. Każde z siedmiu aktywów ma cenę początkową $100$, zaś cena wykonania $K$ również wynosi $100$; stopa procentowa $r=0.03$, stopa dywidendy $\delta=0.05$, zmienność $\sigma=0.40$. Rozważmy amerykańską opcję kupna dla średniej geometrycznej z cen owych siedmiu aktywów. Opcja wygasa po $T=1$ roku i może być zrealizowana wcześniej, w momentach będących wielokrotnościami wartości $0.1$, leżącymi w przedziale $[0,1]$. Wartość wzorcowa ceny tej opcji wynosi $3.27$.
 
-Ponieważ ceny aktywów ewoluują niezależnie, 
-gęstość prawdopodobieństwa przejścia będzie iloczynem gęstości 
-jednowymiarowych.
+Ponieważ ceny aktywów ewoluują niezależnie, gęstość prawdopodobieństwa przejścia będzie iloczynem gęstości jednowymiarowych. Dokładniej, przejście ze stanu $x=(x_1,\ldots,x_7)$ do stanu $y=(y_1,\ldots,y_7)$ w interwale czasowym o długości $\Delta t$ ma rozkład
 
-![](images/Screenshot%202022-12-07%20at%2016.01.11.png)
+$$
+f(x,y)
+=
+\prod_{k=1}^7
+\frac{1}{y_i\sigma \sqrt{\Delta t}}
+\phi
+\left(
+\frac{\log(y_i/x_i)-(r-\delta-\tfrac12\sigma^2)\Delta t}{\sigma\sqrt{\Delta t}}
+\right),
+$$
 
-![](images/Screenshot%202022-12-07%20at%2016.01.23.png)
+gdzie $\phi$ jest gęstością rozkładu $N(0,1)$, patrz [4].
 
-![](images/Screenshot%202022-12-07%20at%2016.14.04.png)
+Porównamy wyniki naszej implementacji metody z wynikami z [1], zebranymi na rysunku 8.8, zamieszczonym powyżej. Etykieta $(50,500)$ na osi poziomej, na tym rysunku, oznacza, że siatka została skonstruowana z parametrem $b=50$, a następnie estymator dolny został wyznaczony na podstawie dodatkowych $500$ trajektorii procesu Markowa $X_i$. Łamane ciągłe, na wykresie, oznaczają wartości estymatora górnego ($\hat V$) i dolnego; liniami przerywanymi zaznaczono dolne i górne granice przedziału ufności na poziomie $90\%$, oszacowanego na podstawie $25$ replikacji dla każdego rozmiaru siatki. Kropkowana linia pozioma wskazuje cenę dokładną.
+
+# Implementacja metody
+
+```{r}
+b = 50
+m = 500
+n = 10
+T = 1
+K = 100
+S_0 = 100
+r = .03
+delta = .05
+sigma = .40
+
+
+
+```
+
 
 # Literatura:
 
@@ -314,3 +294,5 @@ jednowymiarowych.
 [2] J. Jakubowski, R. Sztencel, *Wstęp do teorii prawdopodobieństwa*, Wyd. 4. SCRIPT, Warszawa, 2010
 
 [3] O. Kallenberg, *Foundations of Modern Probability*, Springer, 2021
+
+[4] Rozkład logarytmiczno-normalny. <https://en.wikipedia.org/wiki/Log-normal_distribution>
