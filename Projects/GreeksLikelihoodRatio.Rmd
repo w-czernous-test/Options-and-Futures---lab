@@ -1,6 +1,8 @@
 ---
 title: "Współczynniki greckie i ilorazy wiarygodności"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "`r Sys.Date()`"
 ---
 
