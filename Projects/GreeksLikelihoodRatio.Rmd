@@ -108,10 +108,7 @@ Za [1], podajemy dwie uwagi dotyczące estymatora LRM.
 
 ## Przykład: opcje europejskie
 
-Aby oszacować wartość delty dla opcji europejskich,
-przy użyciu metody ilorazu wiarygodności,
-przyjmijmy, że $S(0)$ jest parametrem gęstości rozkładu $S(T)$.
-Jeśli założymy, że cena $S(t)$ ewoluuje zgodnie z ruchem Browna,
+Aby oszacować wartość delty dla opcji europejskich, przy użyciu metody ilorazu wiarygodności, przyjmijmy, że $S(0)$ jest parametrem gęstości rozkładu $S(T)$. Jeśli założymy, że cena $S(t)$ ewoluuje zgodnie z ruchem Browna,
 
 $$
 S(t) = S(0)\exp\Big(
@@ -129,8 +126,7 @@ g(x) = \frac1{x\sigma\sqrt{T}}\phi(\zeta(x)),
 \frac{\log(x/S(0))-(r-\tfrac12\sigma^2)T}{\sigma\sqrt{T}},
 $$
 
-gdzie $\phi$ jest gęstością rozkładu $N(0,1)$.
-Po pewnych przekształceniach mamy
+gdzie $\phi$ jest gęstością rozkładu $N(0,1)$. Po pewnych przekształceniach mamy
 
 $$
 \frac{dg(x)/dS(0)}{g(x)}
@@ -140,9 +136,7 @@ $$
 \frac{\log(x/S(0))-(r-\tfrac12\sigma^2)T}{S(0)\sigma^2T}.
 $$
 
-
-Wartość *score* otrzymamy, podstawiając $S(T)$ za $x$ w powyższym wyrażeniu; by mieć nieobciążony estymator delty, pomnożymy 
-wynik przez zyskontowaną wypłatę z opcji:
+Wartość *score* otrzymamy, podstawiając $S(T)$ za $x$ w powyższym wyrażeniu; by mieć nieobciążony estymator delty, pomnożymy wynik przez zyskontowaną wypłatę z opcji:
 
 $$
 e^{-rT}(S(T)-K)_+
@@ -151,9 +145,7 @@ e^{-rT}(S(T)-K)_+
 \right).
 $$
 
-Jeśli do wygenerowania próbki $S(T)$ przy danym $S(0)$
-używamy próbki $Z$ z rozkładu standardowego normalnego $N(0,1)$,
-to wówczas $\zeta(S(T))=Z$, zaś powyższy estymator upraszcza się do
+Jeśli do wygenerowania próbki $S(T)$ przy danym $S(0)$ używamy próbki $Z$ z rozkładu standardowego normalnego $N(0,1)$, to wówczas $\zeta(S(T))=Z$, zaś powyższy estymator upraszcza się do
 
 $$
 e^{-rT}(S(T)-K)_+
@@ -162,10 +154,7 @@ e^{-rT}(S(T)-K)_+
 \right).
 $$
 
-Postać funkcji wypłaty nie jest tu istotna;
-każda funkcja $S(T)$ dałaby estymator o tej samej postaci.
-Współczynnik delta dla opcji binaarnej, na przykład, może być estymowany
-przez 
+Postać funkcji wypłaty nie jest tu istotna; każda funkcja $S(T)$ dałaby estymator o tej samej postaci. Współczynnik delta dla opcji binaarnej, na przykład, może być estymowany przez
 
 $$
 e^{-rT}1\{S(T) > K\}
@@ -174,22 +163,13 @@ e^{-rT}1\{S(T) > K\}
 \right).
 $$
 
-Ta ogólna własność metody ilorazów wiarygodności 
-daje jej przewagę nad metodą różniczkowania wzdłuż ścieżek:
-gdy już wyznaczymy *score*, możemy go mnożyć przez różne 
-zdyskontowane funkcje wypłaty,
-otrzymując delty różnych opcji.
-
-
+Ta ogólna własność metody ilorazów wiarygodności daje jej przewagę nad metodą różniczkowania wzdłuż ścieżek: gdy już wyznaczymy *score*, możemy go mnożyć przez różne zdyskontowane funkcje wypłaty, otrzymując delty różnych opcji.
 
 # Metoda mieszana
 
 Przeprowadzimy eksperymenty numeryczne, weryfikujące wyniki metody mieszanej, zilustrowane na rysunku 7.4 w [1].
 
-Używać będziemy 
-metody ilorazów wiarygodności 
-w punktach różniczkowalności, zaś w punktach pozostałych użyjemy 
-metody różniczkowania wzdłuż ścieżek.
+Używać będziemy metody ilorazów wiarygodności w punktach różniczkowalności, zaś w punktach pozostałych użyjemy metody różniczkowania wzdłuż ścieżek.
 
 Wypłatę z opcji binarnej możemy przedstawić w postaci
 
@@ -198,7 +178,7 @@ $$
  \equiv f_\epsilon(x) + h_\epsilon(x),
 $$
 
-gdzie 
+gdzie
 
 $$
 f_\epsilon(x) = \min\left\{
@@ -206,14 +186,7 @@ f_\epsilon(x) = \min\left\{
 \right\}.
 $$
 
-Funkcja $f_\epsilon(x)$ jest kawałkami liniowym przybliżeniem
-schodkowej funkcji wypłaty $1\{x>K\}$,
-zaś $h_\epsilon$ jest poprawką tego przybliżenia.
-Możemy teraz zastosować 
-metodę ilorazów wiarygodności do $f_\epsilon(S(T))$,
-zaś 
-metodę różniczkowania wzdłuż ścieżek do $h_\epsilon(S(T))$, 
-otrzymując złożony estymator delty:
+Funkcja $f_\epsilon(x)$ jest kawałkami liniowym przybliżeniem schodkowej funkcji wypłaty $1\{x>K\}$, zaś $h_\epsilon$ jest poprawką tego przybliżenia. Możemy teraz zastosować metodę ilorazów wiarygodności do $f_\epsilon(S(T))$, zaś metodę różniczkowania wzdłuż ścieżek do $h_\epsilon(S(T))$, otrzymując złożony estymator delty:
 
 $$
 \frac1{2\epsilon}1\{|S(T)-K|<\epsilon\}
@@ -229,15 +202,7 @@ $$
 S(t) = S(0)\exp((r-\tfrac12\sigma^2)t+\sigma W_t).
 $$
 
-Rysunek 7.4 z [1], zamieszczony poniżej, pokazuje wartości 
-wariancji tego estymatora w funkcji parametru $\epsilon$,
-przy $S(0)=K=100$, $\sigma=0.3$, $r=0.05$, $T=0.25$.
-Przypadek $\epsilon=0$ odpowiada użyciu wyłącznie metody 
-ilorazu wiarygodności. 
-Wartości $\epsilon$ bliskie zera, dają w wyniku dużą wariancję,
-z winy $\epsilon$ w mianowniku estymatora, 
-ale przy dużych $\epsilon$ wariancja jest mała.
-Minimum występuje dla zaskakująco dużej wartości $\epsilon\approx35$.
+Rysunek 7.4 z [1], zamieszczony poniżej, pokazuje wartości wariancji tego estymatora w funkcji parametru $\epsilon$, przy $S(0)=K=100$, $\sigma=0.3$, $r=0.05$, $T=0.25$. Przypadek $\epsilon=0$ odpowiada użyciu wyłącznie metody ilorazu wiarygodności. Wartości $\epsilon$ bliskie zera, dają w wyniku dużą wariancję, z winy $\epsilon$ w mianowniku estymatora, ale przy dużych $\epsilon$ wariancja jest mała. Minimum występuje dla zaskakująco dużej wartości $\epsilon\approx35$.
 
 Wyniki te porównamy z naszą implementacją metody mieszanej.
 
@@ -265,4 +230,3 @@ n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
 [2] Wzory jawne dla współczynników greckich w opcjach europejskich. [https://en.wikipedia.org/wiki/Greeks\_(finance)#Formulas_for_European_option_Greeks](https://en.wikipedia.org/wiki/Greeks_(finance)#Formulas_for_European_option_Greeks){.uri}
 
 [3] Rozkład logarytmiczno-normalny. <https://en.wikipedia.org/wiki/Log-normal_distribution>
-
