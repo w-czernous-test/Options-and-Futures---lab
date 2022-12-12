@@ -196,13 +196,49 @@ $$
 
 # Konstrukcja siatki i iloraz wiarygodności
 
-![](images/Screenshot%202022-12-07%20at%2015.58.27.png)
+Niech przestrzenią stanów dla łańcucha Markowa $X_0$, $X_1$,
+ $\ldots$, $X_m$ będzie przestrzeń $R^d$.
+Załóżmy, że dla tego łańcucha, prawdopodobieństwa przejścia do kolejnego stanu 
+mają rozkład z gęstościami $f_1$, $\ldots$, $f_m$:
 
-![](images/Screenshot%202022-12-07%20at%2015.59.10.png)
+$$
+P(X_i\in A|X_{i-1}=x)
+=
+\int_A f_i(x,y)\,dy,
+\qquad i=1,\ldots,m.
+$$
 
-![](images/Screenshot%202022-12-07%20at%2015.59.20.png)
+Wartością funkcji kontynuacji w stanie $x$, w chwili $i$-tej, jest wówczas
 
-![](images/Screenshot%202022-12-07%20at%2015.59.42.png)
+$$
+C_i(x)
+=
+E[V_{i+1}(X_{i+1})\,|\,X_i=x]
+=
+\int V_{i+1}(x)f_{i+1}(x,y)\,dy,
+$$
+
+całka względem gęstości prawdopodobieństwa przejścia. 
+Głównym zadaniem wag w siatce jest umożliwienie oszacowania tych wartości.
+
+Będziemy rozważać następującą metodę generowania $i+1$-ych węzłów siatki,
+mając dane węzły $i$-te (dla $i$-tej chwili czasu).
+Losujemy węzeł $X_{i\ell}$ spośród węzłów $X_{i1}$, $\ldots$, $X_{ib}$, 
+z jednakowym prawdopodobieństwem.
+Następnie generujemy próbkę z rozkładu o gęstości $f_{i+1}(X_{i\ell},\cdot)$.
+Powtarzamy proces, aż uzyskamy $b$ wartości węzłów dla chwili $i+1$;
+za każdym razem losując (,,ze zwracaniem'') spośród $X_{i1}$, $\ldots$, $X_{ib}$.
+Konstrukcja ta spełnia warunek (M1).
+Dla danego wektora $X_i=(X_{i1},\ldots,X_{ib})$, węzły dla chwili $i+1$ 
+są niezależnymi zmiennymi losowymi o jednakowym rozkładzie z gęstością
+
+$$
+\frac1b \sum_{\ell=1}^b
+f_{i+1}(X_{i\ell},\cdot),
+$$
+
+średnią z gęstości prawdopodobieństw przejścia z węzłów dla chwili $i$.
+
 
 ![](images/Screenshot%202022-12-07%20at%2016.00.02.png)
 
