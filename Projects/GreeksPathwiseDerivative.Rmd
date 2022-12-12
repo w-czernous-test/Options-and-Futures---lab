@@ -6,8 +6,6 @@ output:
 date: "`r Sys.Date()`"
 ---
 
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
-
 # Wstęp
 
 Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Prezentujemy metodę różniczkowania wzdłuż ścieżek, dla wyznaczania pochodnych cząstkowych funkcji ceny opcji, opisaną w [1], w rozdziale 7.2 pt. "Pathwise Derivative Estimates".
@@ -55,17 +53,129 @@ Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje p
 
 # Przykład 1: opcje europejskie
 
-![](images/Screenshot%202022-12-07%20at%2011.12.41.png)
+Pochodna, względem ceny startowej $S(0)$, ceny danej wzorem Blacka-Scholesa, ma wzór jawny i jest to $e^{-\delta T}\Phi(d)$, gdzie $d=(\log(S(0)/K)+(r-\delta+\tfrac12\sigma^2)T)/(\sigma\sqrt{T})$, $\delta$ jest stopą dywidendy, zaś $\Phi$ jest dystrybuantą rozkładu normalnego $N(0,1)$. Wyznaczenie tego współczynnika delta (nie mylić ze stopą dywidendy) nie wymaga symulacji Monte Carlo, jednakże stanowi poręczny przykład dla prezentacji metody różniczkowania wzdłuż ścieżek.
 
-![](images/Screenshot%202022-12-07%20at%2011.13.21.png)
+Niech
+
+$$
+Y = e^{-rT}(S(T)-K)_+,
+$$
+
+gdzie
+
+$$
+S(T) = S(0)\exp\Big(
+(r-\delta -\tfrac12\sigma^2)T + \sigma\sqrt{T}Z
+\Big),
+\qquad Z\sim N(0,1),
+$$
+
+weźmy też $\theta$ będące parametrem $S(0)$, przy stałych, dodatnich wartościach parametrów $r$, $\sigma$, $T$ oraz $K$. Ze wzoru na pochodną funkcji złożonej,
+
+$$
+\frac{dY}{dS(0)}
+=
+\frac{dY}{dS(T)}
+\:
+\frac{dS(T)}{dS(0)}.
+$$
+
+Dla wyliczenia pierwszego z tych czynników, zauważmy, że
+
+$$
+\frac{d}{dx}
+(0,x-K)_+
+=
+\begin{cases}
+0,\; & x<K,\\
+1,& x>K.
+\end{cases}
+$$
+
+W punkcie $x=K$ pochodna nie istnieje. Ale ponieważ zdarzenie $\{S(T)=K\}$ ma zerowe prawdopodobieństwo, $Y$ jest prawie na pewno różniczkowalna względem $S(T)$ i ma pochodną
+
+$$
+\frac{dY}{dS(T)}
+=
+e^{-rT}1\{S(T)>K\}.
+$$
+
+Co do drugiego czynnika, zauważmy, że $S(T)$ zależy w sposób liniowy od $S(0)$, a zatem $\frac{dS(T)}{dS(0)}=\frac{S(T)}{S(0)}$. Podsumowując, mamy
+
+$$
+\frac{dY}{dS(0)}
+=
+e^{-rT}\frac{S(T)}{S(0)}
+1\{ S(T)>K \},
+$$
+
+wartość, którą łatwo wyznaczamy przy okazji symulacji wartości $S(T)$. Wartość oczekiwana powyższego wyrażenie to rzeczywiście delta dla wzoru Blacka-Scholesa, a zatem mamy estymator nieobciążony.
 
 # Przykład 2: opcje azjatyckie
 
-![](images/Screenshot%202022-12-07%20at%2011.14.31.png)
+Jak w poprzednim przykładzie, przyjmijmy, że cena instrumentu bazowego ewoluuje zgodnie z geometrycznym ruchem Browna. Rozważmy opcję azjatycką
+
+$$
+Y = e^{-rT}(\bar S-K)_+,
+\quad
+\bar S=
+\frac1m \sum_{i=1}^m
+S(t_i),
+$$
+
+dla pewnych ustalonych chwil czasu $0<t_1<\ldots<t_m\le T$. Dość podobnie, jak w poprzednim przykładzie,
+
+$$
+\frac{dY}{dS(0)}
+=
+\frac{dY}{d\bar S}
+\:
+\frac{d\bar S}{dS(0)}
+=
+e^{-rT}
+1\{\bar S>K\}
+\frac{d\bar S}{dS(0)}.
+$$
+
+Zarazem
+
+$$
+\frac{d\bar S}{dS(0)}
+= \frac1m \sum_{i=1}^m \frac{dS(t_i)}{dS(0)}
+= \frac1m \sum_{i=1}^m \frac{S(t_i)}{S(0)}
+= \frac{\bar S}{S(0)}.
+$$
+
+Estymator delty tej opcji, wyliczony metodą różniczkowania wzdłuż ścieżek, ma więc postać
+
+$$
+\frac{dY}{dS(0)}
+=
+e^{-rT}
+1\{\bar S>K \}
+\frac{\bar S}{S(0)}.
+$$
 
 # Przykład 3 (negatywny): opcje binarne
 
-![](images/Screenshot%202022-12-07%20at%2011.23.29.png)
+Rozważmy opcję binarną, ze zdyskontowaną wypłatą
+
+$$
+Y = e^{-rT} 1\{S(T)>K\},
+$$
+
+zaś cena $S$ niech będzie modelowana zgodnie z geometrycznym ruchem Browna. Jako funkcja zmiennej $S(T)$, owa zdyskontowana wypłata jest różniczkowalna wszędzie oprócz punktu $S(T)=K$, a co za tym idzie, różniczkowalna prawie na pewno. Ale ponieważ $Y$ jest kawałkami stała względem $S(T)$, jej odpowiednia pochodna zeruje się w każdym punkcie, w którym istnieje, co przenosi się na pochodną względem $S(0)$. A zatem
+
+$$
+0=E\left[
+\frac{dY}{dS(0)}
+\right]
+\neq
+\frac{d}{dS(0)}
+E[Y].
+$$
+
+W tym przykładzie, pochodna wzdłuż ścieżek istnieje prawie na pewno, jednakże nie daje żadnej informacji o pochodnej ceny opcji.
 
 # Estymatory nieobciążone - warunki dostateczne
 
@@ -87,7 +197,7 @@ Jeśli $f$ jest różniczkowalna, wówczas $Y$ dziedziczy własność różniczk
 
 **(A2)** $P(X(\theta)\in D_f) = 1$ dla każdego $\theta\in\Theta$.
 
-W takim wypadku, $Y'(\theta)$ istnieje z prawdopodobieństwem $1$, i jest dane wzorem
+W takim wypadku, $Y'(\theta)$ istnieje z prawdopodobieństwem $1$ i jest dane wzorem
 
 $$
 Y'(\theta) = \sum_{i=1}^m
@@ -135,6 +245,18 @@ $$
 skąd wynika własność (\*) na mocy twierdzenia Lebesgue'a o zbieżności zmajoryzowanej.
 
 Podsumowując, warunki (A1)-(A4) wystarczają, by zapewnić nieobciążoność estymatora $Y'(\theta)$.
+
+# Współczynniki vega, rho, theta dla opcji europejskich
+
+Podobnie jak dla delty, opisanej w przykładzie powyżej, wyznaczymy teraz wzory na estymatory trzech innych współczynników greckich. Sprawdzimy też, czy warunki (A1)-(A4) są spełnione dla każdego z nich.
+
+...
+
+# Współczynniki vega, rho, theta dla opcji azjatyckich
+
+Podobnie jak dla delty, opisanej wyżej w przykładzie dotyczącym opcji azjatyckich, wyznaczymy teraz wzory na estymatory trzech innych współczynników greckich dla tychże opcji. Sprawdzimy też, czy warunki (A1)-(A4) są spełnione dla każdego z nich.
+
+...
 
 # Przykład numeryczny - opcje europejskie
 

@@ -59,17 +59,88 @@ Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje p
 
 ## Przykład 1: opcje europejskie
 
-![](images/Screenshot%202022-12-07%20at%2011.12.41.png)
+Pochodna, względem ceny startowej $S(0)$, ceny danej wzorem Blacka-Scholesa, ma wzór jawny i jest to $e^{-\delta T}\Phi(d)$, gdzie $d=(\log(S(0)/K)+(r-\delta+\tfrac12\sigma^2)T)/(\sigma\sqrt{T})$, $\delta$ jest stopą dywidendy, zaś $\Phi$ jest dystrybuantą rozkładu normalnego $N(0,1)$. Wyznaczenie tego współczynnika delta (nie mylić ze stopą dywidendy) nie wymaga symulacji Monte Carlo, jednakże stanowi poręczny przykład dla prezentacji metody różniczkowania wzdłuż ścieżek.
 
-![](images/Screenshot%202022-12-07%20at%2011.13.21.png)
+Niech
+
+$$
+Y = e^{-rT}(S(T)-K)_+,
+$$
+
+gdzie
+
+$$
+S(T) = S(0)\exp\Big(
+(r-\tfrac12\sigma^2)T + \sigma\sqrt{T}Z
+\Big),
+\qquad Z\sim N(0,1),
+$$
+
+weźmy też $\theta$ będące parametrem $S(0)$, przy stałych, dodatnich wartościach parametrów $r$, $\sigma$, $T$ oraz $K$. Ze wzoru na pochodną funkcji złożonej,
+
+$$
+\frac{dY}{dS(0)}
+=
+\frac{dY}{dS(T)}
+\:
+\frac{dS(T)}{dS(0)}.
+$$
+
+Dla wyliczenia pierwszego z tych czynników, zauważmy, że
+
+$$
+\frac{d}{dx}
+(0,x-K)_+
+=
+\begin{cases}
+0,\; & x<K,\\
+1,& x>K.
+\end{cases}
+$$
+
+W punkcie $x=K$ pochodna nie istnieje. Ale ponieważ zdarzenie $\{S(T)=K\}$ ma zerowe prawdopodobieństwo, $Y$ jest prawie na pewno różniczkowalna względem $S(T)$ i ma pochodną
+
+$$
+\frac{dY}{dS(T)}
+=
+e^{-rT}1\{S(T)>K\}.
+$$
+
+Co do drugiego czynnika, zauważmy, że $S(T)$ zależy w sposób liniowy od $S(0)$, a zatem $\frac{dS(T)}{dS(0)}=\frac{S(T)}{S(0)}$. Podsumowując, mamy
+
+$$
+\frac{dY}{dS(0)}
+=
+e^{-rT}\frac{S(T)}{S(0)}
+1\{ S(T)>K \},
+$$
+
+wartość, którą łatwo wyznaczamy przy okazji symulacji wartości $S(T)$. Wartość oczekiwana powyższego wyrażenie to rzeczywiście delta dla wzoru Blacka-Scholesa, a zatem mamy estymator nieobciążony.
 
 ## Przykład 2 (negatywny): opcje binarne
 
-![](images/Screenshot%202022-12-07%20at%2011.23.29.png)
+Rozważmy opcję binarną, ze zdyskontowaną wypłatą
 
-Powodem, dla którego opcje binarne i ich współczynnik delta wymykają się metodzie różniczkowania wzdłuż ścieżek, jest nieciągłość (a więc i nieróżniczkowalność) $Y$ jako funkcji $S_T$. Metoda ilorazów wiarygodności jest niewrażliwa na tę nieregularność, za to ma inną wadę: uzyskiwany tą metodą estymator ma wysoką wariancję.
+$$
+Y = e^{-rT} 1\{S(T)>K\},
+$$
+
+zaś cena $S$ niech będzie modelowana zgodnie z geometrycznym ruchem Browna. Jako funkcja zmiennej $S(T)$, owa zdyskontowana wypłata jest różniczkowalna wszędzie oprócz punktu $S(T)=K$, a co za tym idzie, różniczkowalna prawie na pewno. Ale ponieważ $Y$ jest kawałkami stała względem $S(T)$, jej odpowiednia pochodna zeruje się w każdym punkcie, w którym istnieje, co przenosi się na pochodną względem $S(0)$. A zatem
+
+$$
+0=E\left[
+\frac{dY}{dS(0)}
+\right]
+\neq
+\frac{d}{dS(0)}
+E[Y].
+$$
+
+W tym przykładzie, pochodna wzdłuż ścieżek istnieje prawie na pewno, jednakże nie dostarcza żadnej informacji o pochodnej ceny opcji.
 
 # Metoda ilorazu wiarygodności
+
+Powodem, dla którego opcje binarne i ich współczynnik delta wymykają się metodzie różniczkowania wzdłuż ścieżek, jest nieciągłość (a więc i nieróżniczkowalność) $Y$ jako funkcji $S_T$. Metoda ilorazów wiarygodności jest niewrażliwa na tę nieregularność, za to ma inną wadę: uzyskiwany tą metodą estymator ma wysoką wariancję.
 
 Rozważmy wypłatę $Y$ z opcji, jako funkcję $f$ wektora stanów rynku $X=(X_1,\ldots,X_m)$. Współrzędne $X$ mogą być na przykład cenami kilku różnych aktywów, albo też cenami jednego aktywa w różnych chwilach czasu. Przy metodzie różniczkowania wzdłuż ścieżek, zakładaliśmy, że istnieje zależność funkcyjna $X$ (a stąd i $Y$) od parametru $\theta$. W metodzie ilorazu wiarygodności, zamiast tego zakładamy, że rozkład $X$ posiada gęstość $g$, i że $\theta$ jest parametrem tej gęstości. Oznaczamy więc tę gęstość przez $g_\theta$, a gdy całkujemy względem rozkładu $X$, będziemy też oznaczać wartość oczekiwaną przez $E_\theta$. W tej nomenklaturze, wartością oczekiwaną wypłaty jest
 
@@ -84,7 +155,7 @@ $$
 \frac{d}{d\theta}E_\theta[Y] = \int_{R^m} f(x)\frac{d}{d\theta} g_\theta(x)\,dx.
 $$
 
-W takim razie, mnożąć i dzieląc pod całką przez $g_\theta$, otrzymujemy:
+W takim razie, mnożąc i dzieląc pod całką przez $g_\theta$, otrzymujemy:
 
 $$
 \frac{d}{d\theta}E_\theta[Y] 
@@ -204,7 +275,7 @@ $$
 S(t) = S(0)\exp((r-\tfrac12\sigma^2)t+\sigma W_t).
 $$
 
-Rysunek 7.4 z [1], zamieszczony poniżej, pokazuje wartości wariancji tego estymatora w funkcji parametru $\epsilon$, przy $S(0)=K=100$, $\sigma=0.3$, $r=0.05$, $T=0.25$. Przypadek $\epsilon=0$ odpowiada użyciu wyłącznie metody ilorazu wiarygodności. Wartości $\epsilon$ bliskie zera, dają w wyniku dużą wariancję, z winy $\epsilon$ w mianowniku estymatora, ale przy dużych $\epsilon$ wariancja jest mała. Minimum występuje dla zaskakująco dużej wartości $\epsilon\approx35$.
+Rysunek 7.4 z [1], zamieszczony poniżej, pokazuje wartości wariancji tego estymatora w funkcji parametru $\epsilon$, przy $S(0)=K=100$, $\sigma=0.3$, $r=0.05$, $\delta=0$, $T=0.25$. Przypadek $\epsilon=0$ odpowiada użyciu wyłącznie metody ilorazu wiarygodności. Wartości $\epsilon$ bliskie zera, dają w wyniku dużą wariancję, z winy $\epsilon$ w mianowniku estymatora, ale przy dużych $\epsilon$ wariancja jest mała. Minimum występuje dla zaskakująco dużej wartości $\epsilon\approx35$.
 
 Wyniki te porównamy z naszą implementacją metody mieszanej.
 
