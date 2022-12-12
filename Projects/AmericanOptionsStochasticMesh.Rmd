@@ -233,18 +233,36 @@ Dla danego wektora $X_i=(X_{i1},\ldots,X_{ib})$, węzły dla chwili $i+1$
 są niezależnymi zmiennymi losowymi o jednakowym rozkładzie z gęstością
 
 $$
-\frac1b \sum_{\ell=1}^b
-f_{i+1}(X_{i\ell},\cdot),
+\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell},\cdot)
+,
 $$
 
 średnią z gęstości prawdopodobieństw przejścia z węzłów dla chwili $i$.
+Zdefiniujmy teraz wagi następująco:
 
-
-![](images/Screenshot%202022-12-07%20at%2016.00.02.png)
+$$
+W^i_{jk}
+=
+\frac{%
+f_{i+1}(X_{ij},X_{i+1,k})
+}{%-------------------------
+\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})
+}.
+$$
 
 # Wagi estymatora dolnego
 
-![](images/Screenshot%202022-12-07%20at%2016.00.30.png)
+Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ przez zmienną $x$:
+$$
+W^i_{k}(x)
+=
+\frac{%
+f_{i+1}(x,X_{i+1,k})
+}{%-------------------------
+\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})
+}.
+$$
+
 
 # Przykład numeryczny - opcje amerykańskie dla średniej geometrycznej z siedmiu aktywów
 
@@ -266,6 +284,18 @@ S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt
 \qquad k=1,\ldots,7,
 \quad Z^k \sim N(0,1).
 $$
+
+Przyjmijmy, że wartości parametrów są następujące.
+Każde z siedmiu aktywów ma cenę początkową $100$,
+zaś cena wykonania $K$ również wynosi $100$.
+Stopa procentowa $r=0.03$, stopa dywidendy $\delta=0.05$,
+zmienność $\sigma=0.40$. 
+Rozważmy amerykańską opcję kupna dla średniej geometrycznej 
+z cen owych siedmiu aktywów. 
+Opcja wygasa po $T=1$ roku, i może być zrealizowana 
+w momentach będących wielokrotnościami wartości $0.1$,
+leżącymi w przedziale $[0,1]$.
+
 
 ![](images/Screenshot%202022-12-07%20at%2016.01.11.png)
 
