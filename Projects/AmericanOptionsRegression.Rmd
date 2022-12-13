@@ -73,7 +73,7 @@ $$
 E[(D_{i,i+1}(X_{i+1})V_{i+1}(X_{i+1}) - C_i(X_i))^2].
 $$
 
-Ponieważ mamy $b$ próbek par $(X,Y)=(X_i,X_{i+1})$, więc staramy się zminimalizować (p. funkcja 'lm' w R):
+Ponieważ mamy $b$ prób par $(X,Y)=(X_i,X_{i+1})$, więc staramy się zminimalizować (p. funkcja 'lm' w R):
 
 $$
 \frac1b \sum_{j=1}^b \left(

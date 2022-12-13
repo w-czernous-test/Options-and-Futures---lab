@@ -1,10 +1,10 @@
 ---
 title: "Współczynniki greckie i ilorazy wiarygodności"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "`r Sys.Date()`"
 ---
-
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
 
 # Wstęp
 
@@ -57,17 +57,88 @@ Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje p
 
 ## Przykład 1: opcje europejskie
 
-![](images/Screenshot%202022-12-07%20at%2011.12.41.png)
+Pochodna, względem ceny startowej $S(0)$, ceny danej wzorem Blacka-Scholesa, ma wzór jawny i jest to $e^{-\delta T}\Phi(d)$, gdzie $d=(\log(S(0)/K)+(r-\delta+\tfrac12\sigma^2)T)/(\sigma\sqrt{T})$, $\delta$ jest stopą dywidendy, zaś $\Phi$ jest dystrybuantą rozkładu normalnego $N(0,1)$. Wyznaczenie tego współczynnika delta (nie mylić ze stopą dywidendy) nie wymaga symulacji Monte Carlo, jednakże stanowi poręczny przykład dla prezentacji metody różniczkowania wzdłuż ścieżek.
 
-![](images/Screenshot%202022-12-07%20at%2011.13.21.png)
+Niech
+
+$$
+Y = e^{-rT}(S(T)-K)_+,
+$$
+
+gdzie
+
+$$
+S(T) = S(0)\exp\Big(
+(r-\tfrac12\sigma^2)T + \sigma\sqrt{T}Z
+\Big),
+\qquad Z\sim N(0,1),
+$$
+
+weźmy też $\theta$ będące parametrem $S(0)$, przy stałych, dodatnich wartościach parametrów $r$, $\sigma$, $T$ oraz $K$. Ze wzoru na pochodną funkcji złożonej,
+
+$$
+\frac{dY}{dS(0)}
+=
+\frac{dY}{dS(T)}
+\:
+\frac{dS(T)}{dS(0)}.
+$$
+
+Dla wyliczenia pierwszego z tych czynników, zauważmy, że
+
+$$
+\frac{d}{dx}
+(0,x-K)_+
+=
+\begin{cases}
+0,\; & x<K,\\
+1,& x>K.
+\end{cases}
+$$
+
+W punkcie $x=K$ pochodna nie istnieje. Ale ponieważ zdarzenie $\{S(T)=K\}$ ma zerowe prawdopodobieństwo, $Y$ jest prawie na pewno różniczkowalna względem $S(T)$ i ma pochodną
+
+$$
+\frac{dY}{dS(T)}
+=
+e^{-rT}1\{S(T)>K\}.
+$$
+
+Co do drugiego czynnika, zauważmy, że $S(T)$ zależy w sposób liniowy od $S(0)$, a zatem $\frac{dS(T)}{dS(0)}=\frac{S(T)}{S(0)}$. Podsumowując, mamy
+
+$$
+\frac{dY}{dS(0)}
+=
+e^{-rT}\frac{S(T)}{S(0)}
+1\{ S(T)>K \},
+$$
+
+wartość, którą łatwo wyznaczamy przy okazji symulacji wartości $S(T)$. Wartość oczekiwana powyższego wyrażenie to rzeczywiście delta dla wzoru Blacka-Scholesa, a zatem mamy estymator nieobciążony.
 
 ## Przykład 2 (negatywny): opcje binarne
 
-![](images/Screenshot%202022-12-07%20at%2011.23.29.png)
+Rozważmy opcję binarną, ze zdyskontowaną wypłatą
 
-Powodem, dla którego opcje binarne i ich współczynnik delta wymykają się metodzie różniczkowania wzdłuż ścieżek, jest nieciągłość (a więc i nieróżniczkowalność) $Y$ jako funkcji $S_T$. Metoda ilorazów wiarygodności jest niewrażliwa na tę nieregularność, za to ma inną wadę: uzyskiwany tą metodą estymator ma wysoką wariancję.
+$$
+Y = e^{-rT} 1\{S(T)>K\},
+$$
+
+zaś cena $S$ niech będzie modelowana zgodnie z geometrycznym ruchem Browna. Jako funkcja zmiennej $S(T)$, owa zdyskontowana wypłata jest różniczkowalna wszędzie oprócz punktu $S(T)=K$, a co za tym idzie, różniczkowalna prawie na pewno. Ale ponieważ $Y$ jest kawałkami stała względem $S(T)$, jej odpowiednia pochodna zeruje się w każdym punkcie, w którym istnieje, co przenosi się na pochodną względem $S(0)$. A zatem
+
+$$
+0=E\left[
+\frac{dY}{dS(0)}
+\right]
+\neq
+\frac{d}{dS(0)}
+E[Y].
+$$
+
+W tym przykładzie, pochodna wzdłuż ścieżek istnieje prawie na pewno, jednakże nie dostarcza żadnej informacji o pochodnej ceny opcji.
 
 # Metoda ilorazu wiarygodności
+
+Powodem, dla którego opcje binarne i ich współczynnik delta wymykają się metodzie różniczkowania wzdłuż ścieżek, jest nieciągłość (a więc i nieróżniczkowalność) $Y$ jako funkcji $S_T$. Metoda ilorazów wiarygodności jest niewrażliwa na tę nieregularność, za to ma inną wadę: uzyskiwany tą metodą estymator ma wysoką wariancję.
 
 Rozważmy wypłatę $Y$ z opcji, jako funkcję $f$ wektora stanów rynku $X=(X_1,\ldots,X_m)$. Współrzędne $X$ mogą być na przykład cenami kilku różnych aktywów, albo też cenami jednego aktywa w różnych chwilach czasu. Przy metodzie różniczkowania wzdłuż ścieżek, zakładaliśmy, że istnieje zależność funkcyjna $X$ (a stąd i $Y$) od parametru $\theta$. W metodzie ilorazu wiarygodności, zamiast tego zakładamy, że rozkład $X$ posiada gęstość $g$, i że $\theta$ jest parametrem tej gęstości. Oznaczamy więc tę gęstość przez $g_\theta$, a gdy całkujemy względem rozkładu $X$, będziemy też oznaczać wartość oczekiwaną przez $E_\theta$. W tej nomenklaturze, wartością oczekiwaną wypłaty jest
 
@@ -82,7 +153,7 @@ $$
 \frac{d}{d\theta}E_\theta[Y] = \int_{R^m} f(x)\frac{d}{d\theta} g_\theta(x)\,dx.
 $$
 
-W takim razie, mnożąć i dzieląc pod całką przez $g_\theta$, otrzymujemy:
+W takim razie, mnożąc i dzieląc pod całką przez $g_\theta$, otrzymujemy:
 
 $$
 \frac{d}{d\theta}E_\theta[Y] 
@@ -108,19 +179,103 @@ Za [1], podajemy dwie uwagi dotyczące estymatora LRM.
 
 ## Przykład: opcje europejskie
 
-![](images/Screenshot%202022-12-07%20at%2016.48.48.png)
+Aby oszacować wartość delty dla opcji europejskich, przy użyciu metody ilorazu wiarygodności, przyjmijmy, że $S(0)$ jest parametrem gęstości rozkładu $S(T)$. Jeśli założymy, że cena $S(t)$ ewoluuje zgodnie z ruchem Browna,
 
-![](images/Screenshot%202022-12-07%20at%2016.48.58.png)
+$$
+S(t) = S(0)\exp\Big(
+(r-\delta-\tfrac12\sigma^2)t + \sigma W_t\Big),
+\qquad 
+t\in[0,T],
+$$
 
-![](images/Screenshot%202022-12-07%20at%2016.49.06.png)
+wówczas jej wartość $S(T)$ ma rozkład logarytmiczno-normalny (p. [3]) z gęstością $g$:
+
+$$
+g(x) = \frac1{x\sigma\sqrt{T}}\phi(\zeta(x)),
+\quad
+\zeta(x) = 
+\frac{\log(x/S(0))-(r-\tfrac12\sigma^2)T}{\sigma\sqrt{T}},
+$$
+
+gdzie $\phi$ jest gęstością rozkładu $N(0,1)$. Po pewnych przekształceniach mamy
+
+$$
+\frac{dg(x)/dS(0)}{g(x)}
+=
+-\zeta(x)\frac{d\zeta(x)}{dS(0)}
+=
+\frac{\log(x/S(0))-(r-\tfrac12\sigma^2)T}{S(0)\sigma^2T}.
+$$
+
+Wartość *score* otrzymamy, podstawiając $S(T)$ za $x$ w powyższym wyrażeniu; by mieć nieobciążony estymator delty, pomnożymy wynik przez zyskontowaną wypłatę z opcji:
+
+$$
+e^{-rT}(S(T)-K)_+
+\left(
+\frac{\log(x/S(0))-(r-\tfrac12\sigma^2)T}{S(0)\sigma^2T}
+\right).
+$$
+
+Jeśli do wygenerowania próbki $S(T)$ przy danym $S(0)$ używamy próbki $Z$ z rozkładu standardowego normalnego $N(0,1)$, to wówczas $\zeta(S(T))=Z$, zaś powyższy estymator upraszcza się do
+
+$$
+e^{-rT}(S(T)-K)_+
+\left(
+\frac{Z}{S(0)\sigma\sqrt{T}}
+\right).
+$$
+
+Postać funkcji wypłaty nie jest tu istotna; każda funkcja $S(T)$ dałaby estymator o tej samej postaci. Współczynnik delta dla opcji binaarnej, na przykład, może być estymowany przez
+
+$$
+e^{-rT}1\{S(T) > K\}
+\left(
+\frac{Z}{S(0)\sigma\sqrt{T}}
+\right).
+$$
+
+Ta ogólna własność metody ilorazów wiarygodności daje jej przewagę nad metodą różniczkowania wzdłuż ścieżek: gdy już wyznaczymy *score*, możemy go mnożyć przez różne zdyskontowane funkcje wypłaty, otrzymując delty różnych opcji.
 
 # Metoda mieszana
 
 Przeprowadzimy eksperymenty numeryczne, weryfikujące wyniki metody mieszanej, zilustrowane na rysunku 7.4 w [1].
 
-![](images/Screenshot%202022-12-07%20at%2016.49.58.png)
+Używać będziemy metody ilorazów wiarygodności w punktach różniczkowalności, zaś w punktach pozostałych użyjemy metody różniczkowania wzdłuż ścieżek.
 
-![](images/Screenshot%202022-12-07%20at%2016.50.09.png)
+Wypłatę z opcji binarnej możemy przedstawić w postaci
+
+$$
+1\{x>K\}  = f_\epsilon(x) + (1\{x>K\}-f_\epsilon(x)) \\
+ \equiv f_\epsilon(x) + h_\epsilon(x),
+$$
+
+gdzie
+
+$$
+f_\epsilon(x) = \min\left\{
+1,\frac{(x-K+\epsilon)_+}{2\epsilon}
+\right\}.
+$$
+
+Funkcja $f_\epsilon(x)$ jest kawałkami liniowym przybliżeniem schodkowej funkcji wypłaty $1\{x>K\}$, zaś $h_\epsilon$ jest poprawką tego przybliżenia. Możemy teraz zastosować metodę ilorazów wiarygodności do $f_\epsilon(S(T))$, zaś metodę różniczkowania wzdłuż ścieżek do $h_\epsilon(S(T))$, otrzymując złożony estymator delty:
+
+$$
+\frac1{2\epsilon}1\{|S(T)-K|<\epsilon\}
+\frac{S(T)}{S(0)}
++
+h_\epsilon(S(T))
+\frac{\zeta(S(T))}{S(0)\sigma\sqrt{T}},
+$$
+
+o ile założymy, że $S(t)$ ewoluuje zgodnie z geometrycznym ruchem Browna,
+
+$$
+S(t) = S(0)\exp((r-\tfrac12\sigma^2)t+\sigma W_t).
+$$
+
+Rysunek 7.4 z [1], zamieszczony poniżej, pokazuje wartości wariancji tego estymatora w funkcji parametru $\epsilon$, przy $S(0)=K=100$, $\sigma=0.3$, $r=0.05$, $\delta=0$, $T=0.25$. Przypadek $\epsilon=0$ odpowiada użyciu wyłącznie metody ilorazu wiarygodności. Wartości $\epsilon$ bliskie zera, dają w wyniku dużą wariancję, z winy $\epsilon$ w mianowniku estymatora, ale przy dużych $\epsilon$ wariancja jest mała. Minimum występuje dla zaskakująco dużej wartości $\epsilon\approx35$.
+
+Wyniki te porównamy z naszą implementacją metody mieszanej.
 
 ![](images/Screenshot%202022-12-07%20at%2016.50.17.png)
 
@@ -132,7 +287,7 @@ r = .05
 sigma = .30
 T = 0.25
 h = 0.01
-n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
+n = 100 # ilość trajektorii/prób ceny opcji (nazewnictwo zgodne z [1])
 ```
 
 ```{r}
@@ -144,3 +299,5 @@ n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
 [1] Paul Glasserman, Monte Carlo Methods in Financial Engineering, Springer 2003
 
 [2] Wzory jawne dla współczynników greckich w opcjach europejskich. [https://en.wikipedia.org/wiki/Greeks\_(finance)#Formulas_for_European_option_Greeks](https://en.wikipedia.org/wiki/Greeks_(finance)#Formulas_for_European_option_Greeks){.uri}
+
+[3] Rozkład logarytmiczno-normalny. <https://en.wikipedia.org/wiki/Log-normal_distribution>

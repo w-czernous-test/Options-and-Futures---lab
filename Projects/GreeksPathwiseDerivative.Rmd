@@ -1,10 +1,10 @@
 ---
 title: "Współczynniki greckie i różniczkowanie wzdłuż ścieżek"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "`r Sys.Date()`"
 ---
-
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
 
 # Wstęp
 
@@ -53,31 +53,214 @@ Gdy dla ustalonej wartości parametru $\theta$, pochodna $Y'(\theta)$ istnieje p
 
 # Przykład 1: opcje europejskie
 
-![](images/Screenshot%202022-12-07%20at%2011.12.41.png)
+Pochodna, względem ceny startowej $S(0)$, ceny danej wzorem Blacka-Scholesa, ma wzór jawny i jest to $e^{-\delta T}\Phi(d)$, gdzie $d=(\log(S(0)/K)+(r-\delta+\tfrac12\sigma^2)T)/(\sigma\sqrt{T})$, $\delta$ jest stopą dywidendy, zaś $\Phi$ jest dystrybuantą rozkładu normalnego $N(0,1)$. Wyznaczenie tego współczynnika delta (nie mylić ze stopą dywidendy) nie wymaga symulacji Monte Carlo, jednakże stanowi poręczny przykład dla prezentacji metody różniczkowania wzdłuż ścieżek.
 
-![](images/Screenshot%202022-12-07%20at%2011.13.21.png)
+Niech
+
+$$
+Y = e^{-rT}(S(T)-K)_+,
+$$
+
+gdzie
+
+$$
+S(T) = S(0)\exp\Big(
+(r-\delta -\tfrac12\sigma^2)T + \sigma\sqrt{T}Z
+\Big),
+\qquad Z\sim N(0,1),
+$$
+
+weźmy też $\theta$ będące parametrem $S(0)$, przy stałych, dodatnich wartościach parametrów $r$, $\sigma$, $T$ oraz $K$. Ze wzoru na pochodną funkcji złożonej,
+
+$$
+\frac{dY}{dS(0)}
+=
+\frac{dY}{dS(T)}
+\:
+\frac{dS(T)}{dS(0)}.
+$$
+
+Dla wyliczenia pierwszego z tych czynników, zauważmy, że
+
+$$
+\frac{d}{dx}
+(0,x-K)_+
+=
+\begin{cases}
+0,\; & x<K,\\
+1,& x>K.
+\end{cases}
+$$
+
+W punkcie $x=K$ pochodna nie istnieje. Ale ponieważ zdarzenie $\{S(T)=K\}$ ma zerowe prawdopodobieństwo, $Y$ jest prawie na pewno różniczkowalna względem $S(T)$ i ma pochodną
+
+$$
+\frac{dY}{dS(T)}
+=
+e^{-rT}1\{S(T)>K\}.
+$$
+
+Co do drugiego czynnika, zauważmy, że $S(T)$ zależy w sposób liniowy od $S(0)$, a zatem $\frac{dS(T)}{dS(0)}=\frac{S(T)}{S(0)}$. Podsumowując, mamy
+
+$$
+\frac{dY}{dS(0)}
+=
+e^{-rT}\frac{S(T)}{S(0)}
+1\{ S(T)>K \},
+$$
+
+wartość, którą łatwo wyznaczamy przy okazji symulacji wartości $S(T)$. Wartość oczekiwana powyższego wyrażenie to rzeczywiście delta dla wzoru Blacka-Scholesa, a zatem mamy estymator nieobciążony.
 
 # Przykład 2: opcje azjatyckie
 
-![](images/Screenshot%202022-12-07%20at%2011.14.31.png)
+Jak w poprzednim przykładzie, przyjmijmy, że cena instrumentu bazowego ewoluuje zgodnie z geometrycznym ruchem Browna. Rozważmy opcję azjatycką
+
+$$
+Y = e^{-rT}(\bar S-K)_+,
+\quad
+\bar S=
+\frac1m \sum_{i=1}^m
+S(t_i),
+$$
+
+dla pewnych ustalonych chwil czasu $0<t_1<\ldots<t_m\le T$. Dość podobnie, jak w poprzednim przykładzie,
+
+$$
+\frac{dY}{dS(0)}
+=
+\frac{dY}{d\bar S}
+\:
+\frac{d\bar S}{dS(0)}
+=
+e^{-rT}
+1\{\bar S>K\}
+\frac{d\bar S}{dS(0)}.
+$$
+
+Zarazem
+
+$$
+\frac{d\bar S}{dS(0)}
+= \frac1m \sum_{i=1}^m \frac{dS(t_i)}{dS(0)}
+= \frac1m \sum_{i=1}^m \frac{S(t_i)}{S(0)}
+= \frac{\bar S}{S(0)}.
+$$
+
+Estymator delty tej opcji, wyliczony metodą różniczkowania wzdłuż ścieżek, ma więc postać
+
+$$
+\frac{dY}{dS(0)}
+=
+e^{-rT}
+1\{\bar S>K \}
+\frac{\bar S}{S(0)}.
+$$
 
 # Przykład 3 (negatywny): opcje binarne
 
-![](images/Screenshot%202022-12-07%20at%2011.23.29.png)
+Rozważmy opcję binarną, ze zdyskontowaną wypłatą
+
+$$
+Y = e^{-rT} 1\{S(T)>K\},
+$$
+
+zaś cena $S$ niech będzie modelowana zgodnie z geometrycznym ruchem Browna. Jako funkcja zmiennej $S(T)$, owa zdyskontowana wypłata jest różniczkowalna wszędzie oprócz punktu $S(T)=K$, a co za tym idzie, różniczkowalna prawie na pewno. Ale ponieważ $Y$ jest kawałkami stała względem $S(T)$, jej odpowiednia pochodna zeruje się w każdym punkcie, w którym istnieje, co przenosi się na pochodną względem $S(0)$. A zatem
+
+$$
+0=E\left[
+\frac{dY}{dS(0)}
+\right]
+\neq
+\frac{d}{dS(0)}
+E[Y].
+$$
+
+W tym przykładzie, pochodna wzdłuż ścieżek istnieje prawie na pewno, jednakże nie daje żadnej informacji o pochodnej ceny opcji.
 
 # Estymatory nieobciążone - warunki dostateczne
 
-Załóżmy, że pochodna $Y'(\theta)$ istnieje prawie na pewno. Podamy niżej warunki dostateczne na to, by zachodziła równość (\*). Ograniczymy się do ...
+Załóżmy, że pochodna $Y'(\theta)$ istnieje prawie na pewno. Podamy niżej warunki dostateczne na to, by zachodziła równość (\*). Ograniczymy się do funkcji wypłaty zależnych jednynie od ceny instrumentu lub instrumentów bazowych w skończonej liczbie chwil czasu. Zamiast rozróżniać między jednym aktywem bazowym a kilkoma, przyjmijmy, że wypłata z opcji jest funkcją wektora losowego $X(\theta)=(X_1(\theta),\ldots,X_m(\theta))$, zależnego od parametru $\theta$. A zatem
 
-![](images/Screenshot%202022-12-07%20at%2011.17.02.png)
+$$
+Y(\theta)
+=
+f(X_1(\theta),\ldots,X_m(\theta)),
+$$
 
-![](images/Screenshot%202022-12-07%20at%2011.17.23.png)
+dla pewnej funkcji $f:R^m\to R$, odpowiadającej konkretnej opcji.
 
-![](images/Screenshot%202022-12-07%20at%2011.18.29.png)
+Zakładamy, że zachodzą następujące warunki.
 
-![](images/Screenshot%202022-12-07%20at%2011.20.03.png)
+**(A1)** W każdym punkcie $\theta\in\Theta$, $X'_i(\theta)$ istnieje z prawdopodobieństwem $1$, dla każdego $i=1,\ldots,m$.
+
+Jeśli $f$ jest różniczkowalna, wówczas $Y$ dziedziczy własność różniczkowalności od zmiennej $X$, przy założeniu (A1). Funkcje wypłaty bywają nieróżniczkowalne, ale pojedyncze punkty nieróżniczkowalności $f$ zazwyczaj można zignorować, ponieważ proces $X$ ,,trafia'' w te punkty z prawdopodobieństwem zero. Dokładnie rzecz ujmując, jeśli przez $D_f\subset R^m$ oznaczymy zbiór punktów różniczkowalności $f$, to wymagamy, by
+
+**(A2)** $P(X(\theta)\in D_f) = 1$ dla każdego $\theta\in\Theta$.
+
+W takim wypadku, $Y'(\theta)$ istnieje z prawdopodobieństwem $1$ i jest dane wzorem
+
+$$
+Y'(\theta) = \sum_{i=1}^m
+\frac{\partial f}{\partial x_i}
+(X(\theta))X'_i(\theta).
+$$
+
+**(A3)** Istnieje stała $k_f$, taka że dla każdego $x$, $y\in R^m$,
+
+$$
+|f(x)  - f(y)| \le k_f\|x-y\|;
+$$
+
+to znaczy, $f$ jest Lipschitzowska.
+
+Standardowa opcja europejska, azjatycka, opcje typów: *lookback*, *spread*, maksimum - wszystkie one spełniają powyższy warunek (tak, jak każda opcja o wypłacie będącej złożeniem przekształceń liniowych i funkcji $\min$ i $\max$); natomiast opcja binarna go nie spełnia.
+
+O procesie $X(\theta)$ zakładamy podobnie:
+
+**(A4)** Istnieją zmienne losowe $\kappa_i$, $i=1,\ldots,m$, takie że dla każdego $\theta_1$, $\theta_2\in\Theta$,
+
+$$
+|X_i(\theta_2)-X_i(\theta_1)| \le \kappa_i|\theta_2-\theta_1|,
+$$
+
+oraz $E\kappa_i<\infty$, $i=1,\ldots,m$.
+
+Warunki (A3) i (A4) łącznie implikują Lipschitzowskość $Y$ prawie na pewno, ponieważ własność Lipschitza zachowywana jest przy składaniu funkcji. Mamy więc
+
+$$
+|Y(\theta_2) - Y(\theta_1)|
+\le
+\kappa_Y
+|\theta_2-\theta_1|,
+$$
+
+gdzie $\kappa_Y=k_f\sum_i \kappa_i$ i zachodzi $E\kappa_Y<\infty$. Zauważmy, że
+
+$$
+\left|\frac{Y(\theta+h)-Y(\theta)}{h}\right|
+\le
+\kappa_Y,
+$$
+
+skąd wynika własność (\*) na mocy twierdzenia Lebesgue'a o zbieżności zmajoryzowanej.
+
+Podsumowując, warunki (A1)-(A4) wystarczają, by zapewnić nieobciążoność estymatora $Y'(\theta)$.
+
+# Współczynniki vega, rho, theta dla opcji europejskich
+
+Podobnie jak dla delty, opisanej w przykładzie powyżej, wyznaczymy teraz wzory na estymatory trzech innych współczynników greckich. Sprawdzimy też, czy warunki (A1)-(A4) są spełnione dla każdego z nich.
 
 ...
+
+# Współczynniki vega, rho, theta dla opcji azjatyckich
+
+Podobnie jak dla delty, opisanej wyżej w przykładzie dotyczącym opcji azjatyckich, wyznaczymy teraz wzory na estymatory trzech innych współczynników greckich dla tychże opcji. Sprawdzimy też, czy warunki (A1)-(A4) są spełnione dla każdego z nich.
+
+...
+
+# Przykład numeryczny - opcje europejskie
+
+Wyliczymy współczynniki: delta, vega, rho, theta, dla europejskich opcji kupna z uwzględnieniem dywidend.
 
 ```{r}
 # Parametry wspólne:
@@ -87,14 +270,8 @@ r = .05
 sigma = .30
 T = 1
 h = 0.01
-n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
-```
+n = 100 # ilość trajektorii/prób ceny opcji (nazewnictwo zgodne z [1])
 
-# Przykład numeryczny - opcje europejskie
-
-Wyliczymy współczynniki: delta, vega, rho, theta, dla europejskich opcji kupna z uwzględnieniem dywidend.
-
-```{r}
 
 ```
 

@@ -16,7 +16,7 @@ r = 0.05; S_0 = 2; K = 2;
 b = 1 # dla opcji warunkowych
 # Parametry zmienne:
 n = 1000 # długość trajektorii
-m = 1000 # ilość trajektorii (próbek)
+m = 1000 # ilość trajektorii (prób)
 ```
 
 # Wzór analityczny dla opcji azjatyckiej ze średnią geometryczną

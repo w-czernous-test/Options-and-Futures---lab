@@ -24,7 +24,7 @@ r = .05
 sigma = .30
 T = 1
 h = 0.01
-n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
+n = 100 # ilość trajektorii/prób ceny opcji (nazewnictwo zgodne z [1])
 ```
 
 ```{r}

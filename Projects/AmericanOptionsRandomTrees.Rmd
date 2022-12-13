@@ -1,10 +1,11 @@
 ---
 title: "Opcje amerykańskie i drzewa losowe"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 date: "`r Sys.Date()`"
 ---
 
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
 
 # Wstęp
 
@@ -112,6 +113,7 @@ Pomocny, w zrozumieniu definicji $\hat V_i^{j_1\cdots j_i}$, będzie przykład n
 
 ![](images/Glasserman_Fig_8.3.png)
 
+
 ```{r}
 m = 5
 b = 10
@@ -139,10 +141,11 @@ V_high_estimator = function(i,x) {
     return (max(payoff, exp(-r*dt) * mean(C)))
   }
 }
-print(V(0,S_0))
+
+print(V_high_estimator(0,S_0))
 ```
 
-Gdy mamy już metodę otrzymywania $\hat V_0(S_0)$, replikujemy tę funkcję $n$ razy, otrzymując pewien wektor próbek $\hat V_0(S_0)$. Pozwala to następnie oszacować przedział ufności dla $E\hat V_0(S_0)$.
+Gdy mamy już metodę otrzymywania $\hat V_0(S_0)$, replikujemy tę funkcję $n$ razy, otrzymując pewien wektor prób $\hat V_0(S_0)$. Pozwala to następnie oszacować przedział ufności dla $E\hat V_0(S_0)$.
 
 ```{r}
 q = replicate(100,V_high_estimator(0,S_0))
@@ -197,19 +200,53 @@ v_low_estimator = function(i,x) {
 print(v_low_estimator(0,S_0))
 ```
 
-Gdy mamy już metodę otrzymywania $\hat v_0(S_0)$, replikujemy tę funkcję $n$ razy, otrzymując pewien wektor próbek $\hat v_0(S_0)$. Pozwala to następnie oszacować przedział ufności dla $E\hat v_0(S_0)$.
+Gdy mamy już metodę otrzymywania $\hat v_0(S_0)$, replikujemy tę funkcję $n$ razy, otrzymując pewien wektor prób $\hat v_0(S_0)$. Pozwala to następnie oszacować przedział ufności dla $E\hat v_0(S_0)$.
 
 ```{r}
 
 ```
 
-Wartość ceny amerykańskiej opcji sprzedaży, znaleziona w kalkulatorze online [3], dla powyższych wartości parametrów: $S_0$ (*price*), $K$ (*strike*), $\sigma$ (*volatility*), $r$ (*interest rate*), $T$ (*expiration*), to: ...
+Wartość ceny amerykańskiej opcji sprzedaży, znaleziona w kalkulatorze online [3], dla powyższych wartości parametrów: $S_0$ (*price*), $K$ (*strike*), $\sigma$ (*volatility*), $r$ (*interest rate*), $T$ (*expiration*), to:
+
+...
 
 # Przedziały ufności dla estymatora ceny opcji
 
-Dalej, otrzymujemy zachowawcze oszacowanie przedziału ufności dla $V_0(S_0)$:
+Korzystając z centralnego twierdzenia granicznego, otrzymujemy oszacowanie przedziału ufności dla $V_0(X_0)$:
 
-![](images/Glasserman_8.3.2_interval.png)
+$$
+I_\delta(n,b) = 
+\left(
+\bar v_0(n,b)-z_{\delta/2}\frac{s_v(n,b)}{\sqrt n}
+,
+\quad
+\bar V_0(n,b)+z_{\delta/2}\frac{s_V(n,b)}{\sqrt n}
+\right),
+$$
+
+gdzie $n$ jest ilością replikacji każdego z estymatorów, $b$ jest parametrem symulacji, o którym mówiliśmy wyżej, natomiast $\bar v_0$, $\bar V_0$, są średnimi z prób estymatora, odpowiednio, dolnego i górnego. Symbole $s_v$, $s_V$ oznaczają odpowiednie odchylenie standardowe z prób estymatora. Wielkość $z_{q}$ to kwantyl standardowego rozkładu normalnego, czyli $\Phi^{-1}(q)$, gdzie $\Phi$ jest dystrybuantą $N(0,1)$.
+
+Przypomnijmy, że $E\hat v_0 \le V_0(X_0) \le E\hat V_0$; jeśli więc $V_0(X_0)$ nie należy do wyżej zdefiniowanego przedziału $I_\delta(n,b)$, to zachodzi albo
+
+$$
+E\hat v_0 \le 
+\bar v_0(n,b)-z_{\delta/2}\frac{s_v(n,b)}{\sqrt n},
+$$
+
+albo
+
+$$
+E\hat V_0 \ge 
+\bar V_0(n,b)-z_{\delta/2}\frac{s_V(n,b)}{\sqrt n},
+$$
+
+a każde z tych zdarzeń ma prawdopodobieństwo nie przekraczające $\delta/2$ (dla dużych $n$);
+ich alternatywa ma prawdopodobieństwo nie większe, niż $\delta$.
+Stąd $V_0(X_0)$ zawiera się w przedziale $I_\delta(n,b)$
+z prawdopodobieństwem (dla dużych $n$) przynajmniej $1-\delta$.
+
+
+
 
 # Przyspieszanie obliczeń
 
@@ -232,7 +269,7 @@ Czas obliczeń można zmierzyć w języku R przy użyciu funkcji
 
 # Redukcja wariancji
 
-Zauważmy, że w obu powyższych estymatorach $Y$ możemy prawdopodobnie zredukować wariancję przy pomocy kontrolnej zmiennej $X$, będącej ceną opcji europejskiej dla tych samych próbek, tj. dla cen $S_T$ (związanych z węzłami $X_m$) - estymator $X$ będzie po prostu średnią wartością $\tilde h_m(X_m)$, gdzie $X_m$ przebiega wszystkie węzły będące liśćmi naszego drzewa.
+Zauważmy, że w obu powyższych estymatorach $Y$ możemy prawdopodobnie zredukować wariancję przy pomocy kontrolnej zmiennej $X$, będącej ceną opcji europejskiej dla tych samych prób, tj. dla cen $S_T$ (związanych z węzłami $X_m$) - estymator $X$ będzie po prostu średnią wartością $\tilde h_m(X_m)$, gdzie $X_m$ przebiega wszystkie węzły będące liśćmi naszego drzewa.
 
 ```{r}
 X_high_estimator_faster_European = function(i,x) {
