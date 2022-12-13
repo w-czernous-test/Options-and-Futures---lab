@@ -6,8 +6,6 @@ output:
 date: "`r Sys.Date()`"
 ---
 
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
-
 # Wstęp
 
 Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Przedstawiamy przykłady numeryczne dla algorytmów wyceny opcji amerykańskich, opisanych w [1], w rozdziale 8.5 pt. "Stochastic Mesh Methods".
@@ -221,11 +219,45 @@ $$
 
 # Wagi estymatora dolnego
 
-Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ przez zmienną $x$: $$
+Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ przez zmienną $x$: 
+
+$$
 W^i_{k}(x)
 =
 \frac{f_{i+1}(x,X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
 $$
+
+# Przedziały ufności dla estymatora ceny opcji
+
+Korzystając z centralnego twierdzenia granicznego, otrzymujemy oszacowanie przedziału ufności dla $V_0(X_0)$:
+
+$$
+I_\delta(n,b) = 
+\left(
+\bar v_0(n,b)-z_{\delta/2}\frac{s_v(n,b)}{\sqrt n}
+,
+\quad
+\bar V_0(n,b)+z_{\delta/2}\frac{s_V(n,b)}{\sqrt n}
+\right),
+$$
+
+gdzie $n$ jest ilością replikacji każdego z estymatorów, $b$ jest parametrem symulacji, o którym mówiliśmy wyżej, natomiast $\bar v_0$, $\bar V_0$, są średnimi z prób estymatora, odpowiednio, dolnego i górnego. Symbole $s_v$, $s_V$ oznaczają odpowiednie odchylenie standardowe z prób estymatora. Wielkość $z_{q}$ to kwantyl standardowego rozkładu normalnego, czyli $\Phi^{-1}(q)$, gdzie $\Phi$ jest dystrybuantą $N(0,1)$.
+
+Przypomnijmy, że $E\hat v_0 \le V_0(X_0) \le E\hat V_0$; jeśli więc $V_0(X_0)$ nie należy do wyżej zdefiniowanego przedziału $I_\delta(n,b)$, to zachodzi albo
+
+$$
+E\hat v_0 \le 
+\bar v_0(n,b)-z_{\delta/2}\frac{s_v(n,b)}{\sqrt n},
+$$
+
+albo
+
+$$
+E\hat V_0 \ge 
+\bar V_0(n,b)-z_{\delta/2}\frac{s_V(n,b)}{\sqrt n},
+$$
+
+a każde z tych zdarzeń ma prawdopodobieństwo nie przekraczające $\delta/2$ (dla dużych $n$); ich alternatywa ma prawdopodobieństwo nie większe, niż $\delta$. Stąd $V_0(X_0)$ zawiera się w przedziale $I_\delta(n,b)$ z prawdopodobieństwem (dla dużych $n$) przynajmniej $1-\delta$.
 
 # Przykład numeryczny - opcje amerykańskie dla średniej geometrycznej z siedmiu aktywów
 
@@ -271,7 +303,9 @@ gdzie $\phi$ jest gęstością rozkładu $N(0,1)$, patrz [4].
 
 Porównamy wyniki naszej implementacji metody z wynikami z [1], zebranymi na rysunku 8.8, zamieszczonym powyżej. Etykieta $(50,500)$ na osi poziomej, na tym rysunku, oznacza, że siatka została skonstruowana z parametrem $b=50$, a następnie estymator dolny został wyznaczony na podstawie dodatkowych $500$ trajektorii procesu Markowa $X_i$. Łamane ciągłe, na wykresie, oznaczają wartości estymatora górnego ($\hat V$) i dolnego; liniami przerywanymi zaznaczono dolne i górne granice przedziału ufności na poziomie $90\%$, oszacowanego na podstawie $25$ replikacji dla każdego rozmiaru siatki. Kropkowana linia pozioma wskazuje cenę dokładną.
 
+
 # Implementacja metody
+
 
 ```{r}
 b = 50
@@ -285,9 +319,7 @@ delta = .05
 sigma = .40
 
 
-
 ```
-
 
 # Literatura:
 

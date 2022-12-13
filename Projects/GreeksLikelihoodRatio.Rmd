@@ -6,8 +6,6 @@ output:
 date: "`r Sys.Date()`"
 ---
 
-#TODO: ze screenshot'ów z [1] możemy zostawić tylko rysunki, oczywiście z podpisanym źródłem, pod każdym z nich; wzory matematyczne z pozostałych screenshot'ów należy przepisać w LaTeX'u, a tekst zwięźle przetłumaczyć.
-
 # Wstęp
 
 Projekt jest ćwiczeniem z wyceny opcji metodą Monte Carlo. Prezentujemy metodę mieszaną dla wyznaczania pochodnych cząstkowych funkcji ceny opcji, opisaną w [1] na przykładzie problemu znajdowania współczynnika delta dla opcji binarnych typu europejskiego.
@@ -289,7 +287,7 @@ r = .05
 sigma = .30
 T = 0.25
 h = 0.01
-n = 100 # ilość trajektorii/próbek ceny opcji (nazewnictwo zgodne z [1])
+n = 100 # ilość trajektorii/prób ceny opcji (nazewnictwo zgodne z [1])
 ```
 
 ```{r}
