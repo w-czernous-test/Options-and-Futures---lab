@@ -91,7 +91,40 @@ $$
 
 bądź też maksimum z tego i z $h_0(X_0)$, gdy dopuszczamy możliwość realizacji opcji w chwili $t_0$.
 
+
+```{r}
+# Załóżmy, że mamy już wyznaczone wszystkie węzły siatki X[i,j] 
+# oraz dane funkcje:
+# -wypłaty (niezależną od i), tilde_h(x);
+# -wagową (patrz rozdział "Wagi estymatora dolnego"), W(i,k,x);
+# a także stałą dyskonta ($D_{i,i+1}(x) = D$).
+# Załóżmy też, że dopuszczamy możliwość realizacji opcji również w chwili $t_0$.
+find_hatV_mj = function(j) {
+  hatV[m,j] = tilde_h(X[m,j])
+}
+find_hatV_ij = function(i,j) {
+  C = c()
+  X_ij = X[i,j]
+  for (k in 1:b) {
+    Wi_jk = W(i,k,X_ij)
+    C[k] = Wi_jk * D * hatV[i+1,k]
+  }
+  hatV[i,j] = max(tilde_h(X_ij), mean(C))
+}
+find_hatV_all = function() {
+  for (j in 1:b) 
+    find_hatV_mj(j)
+  for (i in m-1:0) {
+    for (j in 1:b)
+      find_hatV_ij(i,j)
+  }
+}
+```
+
+
+
 Głównym zagadnieniem w tej metodzie jest odpowiedni wybór współczynników wagowych $W^i_{jk}$. Jest to ściśle związane z metodą otrzymywania kolejnych węzłów $X_{ij}$. Można np. losować niezależne trajektorie procesu Markowa $X_i$, ale nie jest to jedyny sposób generowania siatki.
+
 
 # Założenia o siatce losowej
 
@@ -300,6 +333,8 @@ f(x,y)
 $$
 
 gdzie $\phi$ jest gęstością rozkładu $N(0,1)$, patrz [4].
+
+
 
 Porównamy wyniki naszej implementacji metody z wynikami z [1], zebranymi na rysunku 8.8, zamieszczonym powyżej. Etykieta $(50,500)$ na osi poziomej, na tym rysunku, oznacza, że siatka została skonstruowana z parametrem $b=50$, a następnie estymator dolny został wyznaczony na podstawie dodatkowych $500$ trajektorii procesu Markowa $X_i$. Łamane ciągłe, na wykresie, oznaczają wartości estymatora górnego ($\hat V$) i dolnego; liniami przerywanymi zaznaczono dolne i górne granice przedziału ufności na poziomie $90\%$, oszacowanego na podstawie $25$ replikacji dla każdego rozmiaru siatki. Kropkowana linia pozioma wskazuje cenę dokładną.
 
