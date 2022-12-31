@@ -31,28 +31,6 @@ $$
 
 gdzie $\Theta$ jest zbiorem wszystkich momentów stopu o wartościach w zbiorze $\{0,1,\ldots,m\}$.
 
-# Programowanie dynamiczne
-
-Implementacje rozwiązań układu równań (1) zazwyczaj odnoszą się do jego równoważnej postaci, gdzie funkcje $\tilde h_i$ oraz $\tilde V_i$ nie są zdyskontowane (patrz [1], równania (8.4)-(8.5)):
-
-$$
-\tag{2}
-\tilde V_m(x) = \tilde h_m(x),\\
-\tilde V_{i}(x) = \max\{ \tilde h_{i}(x), \; E[D_{i,i+1}(X_{i+1})\tilde V_{i+1}(X_{i+1}) \;|\; X_{i}=x] \},\quad 0\le i\le m-1.
-$$
-
-Szukamy wtedy $\tilde V_0(X_0)=V_0(X_0)$. Czynnik $D_{i,i+1}$ jest współczynnikiem dyskonta pomiędzy momentem $t_{i+1}$ a $t_{i}$ , czyli wartością, w momencie $t_{i}$, jednego dolara wypłacanego w przyszłej chwili $t_{i+1}$. Dla prostego modelu ze stałą stopą procentową $r$, jest to po prostu $\exp(-r(t_{i+1}-t_{i}))$.
-
-Równoważność sfomułowań (1) i (2) można zobaczyć, jeśli zauważymy, że
-
-$$
-V_i = \exp(-rt_i)\tilde V_i,
-\qquad 
-h_i = \exp(-rt_i)\tilde h_i.
-$$
-
-Zaletą sformułowania (2) jest to, że funkcja wypłaty $\tilde h_i$ jest zazwyczaj niezależna od indeksu $i$.
-
 Wyznaczymy dwa estymatory, "górny" $\hat V$ i "dolny" $\hat v$:
 
 $$
@@ -69,14 +47,15 @@ $$
 
 gdzie $t_0$ jest chwilą obecną, dla której mamy dodatkowy, pojedynczy węzeł siatki, $X_0$.
 
-Będziemy używać symbolu $\hat V_{ij}$ dla przybliżonej wartości opcji w tym węźle, wyliczonej następująco metodą rekursji wstecznej. W węzłach końcowych ($i=m$), definiujemy $\hat V_{mj} = \tilde h_{m}(X_{mj})$. Następnie, definiujemy
+Będziemy używać symbolu $\hat V_{ij}$ dla przybliżonej wartości opcji w tym węźle, wyliczonej następująco metodą rekursji wstecznej. W węzłach końcowych ($i=m$), definiujemy $\hat V_{mj} = h_{m}(X_{mj})$. Następnie, definiujemy
 
 $$
 \hat V_{ij} = \max\left\{
-\tilde h_i(X_{ij}),
+h_i(X_{ij}),
 \frac1b \sum_{k=1}^b 
-  W^i_{jk} D_{i,i+1}(X_{i+1,k}) \hat V_{i+1,k},
-\right\}
+  W^i_{jk} \hat V_{i+1,k},
+\right\},
+\qquad i=1,\ldots,m-1.
 $$
 
 dla pewnych wartości wagowych $W^i_{jk}$.
@@ -85,50 +64,16 @@ Na koniec, w węźle $X_0$ definiujemy
 
 $$
 \hat V_0 = 
-\frac1b \sum_{k=1}^b 
-  D_{0,1}(X_{1,k}) \hat V_{1,k},
+\frac1b \sum_{k=1}^b \hat V_{1,k},
 $$
 
 bądź też maksimum z tego i z $h_0(X_0)$, gdy dopuszczamy możliwość realizacji opcji w chwili $t_0$.
 
-
-```{r}
-# Załóżmy, że mamy już wyznaczone wszystkie węzły siatki X[i,j] 
-# oraz dane funkcje:
-# -wypłaty (niezależną od i), tilde_h(x);
-# -wagową (patrz rozdział "Wagi estymatora dolnego"), W(i,k,x);
-# a także stałą dyskonta ($D_{i,i+1}(x) = D$).
-# Załóżmy też, że dopuszczamy możliwość realizacji opcji również w chwili $t_0$.
-find_hatV_mj = function(j) {
-  hatV[m,j] = tilde_h(X[m,j])
-}
-find_hatV_ij = function(i,j) {
-  C = c()
-  X_ij = X[i,j]
-  for (k in 1:b) {
-    Wi_jk = W(i,k,X_ij)
-    C[k] = Wi_jk * D * hatV[i+1,k]
-  }
-  hatV[i,j] = max(tilde_h(X_ij), mean(C))
-}
-find_hatV_all = function() {
-  for (j in 1:b) 
-    find_hatV_mj(j)
-  for (i in m-1:0) {
-    for (j in 1:b)
-      find_hatV_ij(i,j)
-  }
-}
-```
-
-
-
 Głównym zagadnieniem w tej metodzie jest odpowiedni wybór współczynników wagowych $W^i_{jk}$. Jest to ściśle związane z metodą otrzymywania kolejnych węzłów $X_{ij}$. Można np. losować niezależne trajektorie procesu Markowa $X_i$, ale nie jest to jedyny sposób generowania siatki.
-
 
 # Założenia o siatce losowej
 
-Podamy teraz warunki dla siatki, których spełnianie wystarcza do konstrukcji estymatora ,,górnego'', tj. obciążonego dodatnio, i estymatora ,,dolnego'', tj. obciążonego ujemnie.
+Podamy teraz warunki dla siatki, których spełnianie wystarcza do konstrukcji estymatora ,,górnego", tj. obciążonego dodatnio, i estymatora ,,dolnego", tj. obciążonego ujemnie.
 
 Niech wektor losowy
 
@@ -136,22 +81,12 @@ $$
 X_i = (X_{i1},\ldots,X_{ib})
 $$
 
-będzie ,,stanem siatki'' w $i$-tym kroku czasowym, składającym się ze wszystkich węzłów przypisanych do tego samego momentu czasu, dla $i=1,\ldots,m$, i niech $X_0$ będzie ustalone. Zakładamy, że konstrukcja siatki spełnia warunek Markowa w następującym sensie:
+będzie ,,stanem siatki" w $i$-tym kroku czasowym, składającym się ze wszystkich węzłów przypisanych do tego samego momentu czasu, dla $i=1,\ldots,m$, i niech $X_0$ będzie ustalone. Zakładamy, że konstrukcja siatki spełnia warunek Markowa w następującym sensie:
 
 **(M1)** Dla każdego $i=1,\ldots,m-1$, i dla każdej funkcji mierzalnej $f$, zachodzi:
 
 $$
-E\Big[\, 
- Y
-\:|\:
-X_0,\ldots,X_{i-1},X_i
-\,\Big]
-=
-E\Big[\, 
- Y
-\:|\:
-X_i
-\,\Big],
+E\Big[\, Y \:|\: X_0,\ldots,X_{i-1},X_i \,\Big] = E\Big[\, Y \:|\: X_i \,\Big],
 \quad\text{gdy}\;
 Y=f(X_{i+1},\ldots,X_{m}).
 $$
@@ -171,7 +106,7 @@ Przypomnijmy, że $C_i(x)$ oznacza wartość oczekiwaną wypłaty z realizacji o
 $$
 \frac1b \sum_{k=1}^b
 E\Big[
-W^i_{jk} D_{i,i+1}(X_{i+1,k}) V_{i+1}(X_{i+1,k})
+W^i_{jk} V_{i+1}(X_{i+1,k})
 \:|\:
 X_i
 \Big]
@@ -184,176 +119,153 @@ $$
 Estymator dolny konstruujemy przy pomocy reguły stopowania, którą podpowiada nam siatka. W tym celu musimy rozszerzyć współczynniki wagowe $W^i_{jk}$ ze zbioru $\{X_{i1},\ldots,X_{ib}\}$ na wszystkie punkty przestrzeni stanów w chwili $i$-tej. Przypuśćmy, że mamy takie rozszerzenie, nazwijmy je $W^i_k(x)$; jest to waga łącząca stan $x$ w chwili $i$, z węzłem $X_{i+1,k}$. Dzięki tej funkcji możemy zdefiniować wartość kontynuacji dla $i=1,\ldots,m-1$ na całej przestrzeni stanów, a nie tylko w węzłach siatki:
 
 $$
-\hat C_i(x)
-=
-\frac1b\sum_{k=1}^b
-W^i_{k}(x) D_{i,i+1}(X_{i+1,k}) \hat V_{i+1,k}
+\hat C_i(x) = \frac1b\sum_{k=1}^b W^i_{k}(x) \hat V_{i+1,k},
+\qquad i=1,\ldots,m-1.
 $$
 
-Jeśli założymy dodatkowo, że $W_k^i(X_{ij}) = W^i_{jk}$, wówczas $\hat C_i(X_{ij})$ jest wartością funkcj kontynuacji w węźle siatki $X_{ij}$, tzn. mamy interpolację $\hat C_i$ z węzłów siatki na całą przestrzeń stanów. Definiujemy $\hat C_m\equiv 0$.
-
-Dla ustalonej siatki, możemy teraz wykonać symulację ścieżki $X_0$, $X_1$, $\ldots$, $X_m$ naszego procesu Markowa, reprezentującego ewolucję stanu rynku, niezależnie od ścieżek użytych ewentualnie do konstrukcji siatki. Zdefiniujmy następnie moment stopu:
+Dla $i=0$ wystarczą wagi jednostkowe, zaś funkcja kontynuacji jest stała:
 
 $$
-\tau  = \min\{ i\::\: \tilde h_i(X_i) \ge \hat C_i(X_i) \},
+\hat C_0(x) \equiv \frac1b\sum_{k=1}^b \hat V_{1,k}.
+$$
+
+Jeśli założymy dodatkowo, że $W_k^i(X_{ij}) = W^i_{jk}$, wówczas $\hat C_i(X_{ij})$ jest wartością funkcji kontynuacji w węźle siatki $X_{ij}$, tzn. mamy interpolację $\hat C_i$ z węzłów siatki na całą przestrzeń stanów. Definiujemy $\hat C_m\equiv 0$.
+
+Dla ustalonej siatki, możemy teraz wykonać symulację ścieżki $X_0$, $X_1$, $\ldots$, $X_m$ naszego procesu Markowa, reprezentującego ewolucję stanu rynku, niezależnie od ścieżek użytych ewentualnie do konstrukcji siatki.
+
+Zdefiniujmy następnie moment stopu:
+
+$$
+\tau  = \min\{ i\::\: h_i(X_i) \ge \hat C_i(X_i) \},
 $$
 
 czyli jako pierwszy moment, w którym opłaca się bardziej zrealizować opcję, niż ją zachować (kontynuować).
 
-Ów nieoptymalny moment stopu daje nam w wyniku estymator dolny, jako:
+Ów nieoptymalny moment stopu daje nam w wyniku estymator dolny, mianowicie
 
 $$
-\hat v = D_{0,\tau}(X_{\tau})\tilde h_{\tau}(X_{\tau}),
+\hat v_0 = h_{\tau}(X_{\tau}),
 $$
 
-zdyskontowaną wypłatę w chwili $\tau$, gdzie współczynnik dyskonta w prostym modelu ze stałą stopą procentową $r$, wynosi
+zdyskontowaną wypłatę w chwili $\tau$.
 
-$$
-D_{0,\tau}(X_{\tau}) = \exp(-r\tau).
-$$
-
-# Konstrukcja siatki i iloraz wiarygodności
+# Konstrukcja siatki
 
 Niech przestrzenią stanów dla łańcucha Markowa $X_0$, $X_1$, $\ldots$, $X_m$ będzie przestrzeń $R^d$. Załóżmy, że dla tego łańcucha, prawdopodobieństwa przejścia do kolejnego stanu mają rozkład z gęstościami $f_1$, $\ldots$, $f_m$:
 
-$$
-P(X_i\in A|X_{i-1}=x)
-=
-\int_A f_i(x,y)\,dy,
-\qquad i=1,\ldots,m.
+$$ 
+P(X_i\in A|X_{i-1}=x) = \int_A f_i(x,y)\,dy, \qquad i=1,\ldots,m.
 $$
 
 Wartością funkcji kontynuacji w stanie $x$, w chwili $i$-tej, jest wówczas
 
 $$
-C_i(x)
-=
-E[V_{i+1}(X_{i+1})\,|\,X_i=x]
-=
-\int V_{i+1}(x)f_{i+1}(x,y)\,dy,
+C_i(x) = E[V_{i+1}(X_{i+1})\,|\,X_i=x] = \int V_{i+1}(y)f_{i+1}(x,y)\,dy,
 $$
 
 całka względem gęstości prawdopodobieństwa przejścia. Głównym zadaniem wag w siatce jest umożliwienie oszacowania tych wartości.
 
-Będziemy rozważać następującą metodę generowania $i+1$-ych węzłów siatki, mając dane węzły $i$-te (dla $i$-tej chwili czasu). Losujemy węzeł $X_{i\ell}$ spośród węzłów $X_{i1}$, $\ldots$, $X_{ib}$, z jednakowym prawdopodobieństwem. Następnie generujemy próbkę z rozkładu o gęstości $f_{i+1}(X_{i\ell},\cdot)$. Powtarzamy proces, aż uzyskamy $b$ wartości węzłów dla chwili $i+1$; za każdym razem losując (,,ze zwracaniem'') spośród $X_{i1}$, $\ldots$, $X_{ib}$. Konstrukcja ta spełnia warunek (M1). Dla danego wektora $X_i=(X_{i1},\ldots,X_{ib})$, węzły dla chwili $i+1$ są niezależnymi zmiennymi losowymi o jednakowym rozkładzie z gęstością
+Będziemy rozważać następującą metodę generowania $i+1$-ych węzłów siatki, mając dane węzły $i$-te (dla $i$-tej chwili czasu). Losujemy węzeł $X_{i\ell}$ spośród węzłów $X_{i1}$, $\ldots$, $X_{ib}$, z jednakowym prawdopodobieństwem. Następnie generujemy próbkę z rozkładu o gęstości $f_{i+1}(X_{i\ell},\cdot)$. Powtarzamy proces, aż uzyskamy $b$ wartości węzłów dla chwili $i+1$; za każdym razem losując (,,ze zwracaniem") spośród $X_{i1}$, $\ldots$, $X_{ib}$. Konstrukcja ta spełnia warunek (M1). Dla danego wektora $X_i=(X_{i1},\ldots,X_{ib})$, węzły dla chwili $i+1$ są niezależnymi zmiennymi losowymi o jednakowym rozkładzie z gęstością
 
 $$
-\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell},\cdot)
-,
+\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell},\cdot),
 $$
 
-średnią z gęstości prawdopodobieństw przejścia z węzłów dla chwili $i$. Zdefiniujmy teraz wagi następująco:
+średnią z gęstości prawdopodobieństw przejścia z węzłów dla chwili $i$.
+
+# Wagi estymatora dolnego - iloraz wiarygodności
+
+Do kompletnego opisu metody siatki stochastycznej pozostaje zdefiniować wagi używane w estymatorze górnym oraz w definicji funkcji kontynuacji $\hat C_i$. Siatka skonstruowana w sposób podany wyżej, spełnia warunki (M1)-(M3), przy następujących wagach:
 
 $$
-W^i_{jk}
-=
-\frac{f_{i+1}(X_{ij},X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
+W^i_{jk} = \frac{f_{i+1}(X_{ij},X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
 $$
 
-# Wagi estymatora dolnego
-
-Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ przez zmienną $x$: 
+Funkcje wagowe $W^i_k$ otrzymujemy, zastępując powyżej wartość $X_{ij}$ (tylko w liczniku) przez zmienną $x$:
 
 $$
-W^i_{k}(x)
-=
-\frac{f_{i+1}(x,X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
+W^i_{k}(x) = \frac{f_{i+1}(x,X_{i+1,k})}{\frac1b \sum_{\ell=1}^b f_{i+1}(X_{i\ell}, X_{i+1,k})}.
 $$
 
-# Przedziały ufności dla estymatora ceny opcji
+# Przykład numeryczny nr 1 - opcje amerykańskie dla jednego instrumentu bazowego
 
-Korzystając z centralnego twierdzenia granicznego, otrzymujemy oszacowanie przedziału ufności dla $V_0(X_0)$:
+Weźmy zwykłą opcję amerykańską dla jednego aktywa o cenie modelowanej geometrycznym ruchem Browna.
 
-$$
-I_\delta(n,b) = 
-\left(
-\bar v_0(n,b)-z_{\delta/2}\frac{s_v(n,b)}{\sqrt n}
-,
-\quad
-\bar V_0(n,b)+z_{\delta/2}\frac{s_V(n,b)}{\sqrt n}
-\right),
-$$
+Jeśli aktywo bazowe ma cenę początkową $100$, zaś cena wykonania $K$ również wynosi $100$; stopa procentowa $r=0.05$, stopa dywidendy $\delta=0$, zmienność $\sigma=0.40$, to amerykańska opcja kupna, wygasająca po $T=1$ roku, ma cenę $18.00$.
 
-gdzie $n$ jest ilością replikacji każdego z estymatorów, $b$ jest parametrem symulacji, o którym mówiliśmy wyżej, natomiast $\bar v_0$, $\bar V_0$, są średnimi z prób estymatora, odpowiednio, dolnego i górnego. Symbole $s_v$, $s_V$ oznaczają odpowiednie odchylenie standardowe z prób estymatora. Wielkość $z_{q}$ to kwantyl standardowego rozkładu normalnego, czyli $\Phi^{-1}(q)$, gdzie $\Phi$ jest dystrybuantą $N(0,1)$.
-
-Przypomnijmy, że $E\hat v_0 \le V_0(X_0) \le E\hat V_0$; jeśli więc $V_0(X_0)$ nie należy do wyżej zdefiniowanego przedziału $I_\delta(n,b)$, to zachodzi albo
+Do implementacji metody, potrzebujemy gętości prawdopodobieństwa przejścia ceny $S$ ze stanu $S(t)=x$ do stanu $S(t+dt)=y$ w interwale czasowym o długości $dt$:
 
 $$
-E\hat v_0 \le 
-\bar v_0(n,b)-z_{\delta/2}\frac{s_v(n,b)}{\sqrt n},
+f_i(x,y) = f(x,y) = \frac{1}{y \sigma \sqrt{dt}} \phi\left( \frac{\log(y/x)-(r-\delta-\tfrac12\sigma^2)dt}{\sigma\sqrt{dt}} \right).
 $$
 
-albo
+gdzie $\phi$ jest gęstością rozkładu $N(0,1)$, patrz [4].
+
+Poniższy kod jest implementacją metody siatki stochastycznej, dla tego przykładu, z użyciem redukcji wariancji estymatora górnego (*inner controls*), jak w [5].
+
+```{r}
+# source("AmericanOptionsStochasticMesh_Vanilla.R")
+```
+
+# Przykład numeryczny nr 2 - opcje amerykańskie dla średniej geometrycznej z siedmiu aktywów
+
+W tym przykładzie zakładamy, że ceny siedmiu aktywów, $X=(S_1,S_2,\ldots,S_7)$ ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, to znaczy każda z cen ma rozkład logarytmiczno-normalny (patrz [4]):
 
 $$
-E\hat V_0 \ge 
-\bar V_0(n,b)-z_{\delta/2}\frac{s_V(n,b)}{\sqrt n},
-$$
-
-a każde z tych zdarzeń ma prawdopodobieństwo nie przekraczające $\delta/2$ (dla dużych $n$); ich alternatywa ma prawdopodobieństwo nie większe, niż $\delta$. Stąd $V_0(X_0)$ zawiera się w przedziale $I_\delta(n,b)$ z prawdopodobieństwem (dla dużych $n$) przynajmniej $1-\delta$.
-
-# Przykład numeryczny - opcje amerykańskie dla średniej geometrycznej z siedmiu aktywów
-
-![](images/Screenshot%202022-12-07%20at%2016.13.54.png)
-
-W niniejszym przykładzie zakładamy, że ceny siedmiu aktywów, $X=(S^1,S^2,\ldots,S^7)$ ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, to znaczy każda z cen ma rozkład logarytmiczno-normalny (patrz [4]):
-
-$$
-S^k(t) = S^k(0)\exp\Big(
-(r-\delta-\tfrac12\sigma^2)t + \sigma W^k_t\Big),
+S_n(t) = S_n(0)\exp\Big(
+(r-\delta-\tfrac12\sigma^2)t + \sigma W_n(t)\Big),
 \qquad 
 t\in[0,T],\;
-k=1,2,\ldots,7,
+n=1,2,\ldots,7,
 $$
 
-gdzie procesy Wienera $W^1,\ldots,W^7$ są niezależne; co modelujemy wg schematu Eulera:
+gdzie procesy Wienera $W_1,\ldots,W_7$ są niezależne; co modelujemy wg schematu Eulera:
 
 $$
-S^k_{i+1} = S^k_i \exp((r-\delta-\tfrac12\sigma^2)dt 
-+\sigma\sqrt{dt}Z^k), \\
-\qquad k=1,\ldots,7,
-\quad Z^k \sim N(0,1),
+S_n(t_{i+1}) = S_n(t_i) \exp((r-\delta-\tfrac12\sigma^2)dt
++\sigma\sqrt{dt}Z_n), 
+\quad
+i=0,\ldots,m-1,
+\\
+\qquad n=1,\ldots,7,
+\quad Z_n \sim N(0,1),
 \quad
 dt = t_{i+1}-t_i.
 $$
 
 Przyjmijmy, że wartości parametrów są następujące. Każde z siedmiu aktywów ma cenę początkową $100$, zaś cena wykonania $K$ również wynosi $100$; stopa procentowa $r=0.03$, stopa dywidendy $\delta=0.05$, zmienność $\sigma=0.40$. Rozważmy amerykańską opcję kupna dla średniej geometrycznej z cen owych siedmiu aktywów. Opcja wygasa po $T=1$ roku i może być zrealizowana wcześniej, w momentach będących wielokrotnościami wartości $0.1$, leżącymi w przedziale $[0,1]$. Wartość wzorcowa ceny tej opcji wynosi $3.27$.
 
-Ponieważ ceny aktywów ewoluują niezależnie, gęstość prawdopodobieństwa przejścia będzie iloczynem gęstości jednowymiarowych. Dokładniej, przejście ze stanu $x=(x_1,\ldots,x_7)$ do stanu $y=(y_1,\ldots,y_7)$ w interwale czasowym o długości $\Delta t$ ma rozkład
+Ponieważ ceny aktywów ewoluują niezależnie, gęstość prawdopodobieństwa przejścia będzie iloczynem gęstości jednowymiarowych. Dokładniej, przejście ze stanu $x=(x_1,\ldots,x_d)$ (tu $d=7$) do stanu $y=(y_1,\ldots,y_d)$ w interwale czasowym o długości $dt$ ma rozkład z gęstością
 
 $$
+f_i(x,y)
+=
 f(x,y)
 =
-\prod_{k=1}^7
-\frac{1}{y_i\sigma \sqrt{\Delta t}}
+\prod_{n=1}^d
+\frac{1}{y_n\sigma \sqrt{dt}}
 \phi
 \left(
-\frac{\log(y_i/x_i)-(r-\delta-\tfrac12\sigma^2)\Delta t}{\sigma\sqrt{\Delta t}}
+\frac{\log(y_n/x_n)-(r-\delta-\tfrac12\sigma^2)dt}{\sigma\sqrt{dt}}
 \right),
+\qquad
+i=1,\ldots,m.
 $$
 
 gdzie $\phi$ jest gęstością rozkładu $N(0,1)$, patrz [4].
 
+Fakt, że $S_n$ ewoluują niezależnie, zgodnie z geometrycznym ruchem Browna, ułatwia modelowanie powyższej opcji w następującym sensie. Otóż proces średniej geometrycznej $Y(t)=(S_1(t)\cdots S_7(t))^{1/7}$, również jest geometrycznym ruchem Browna, z parametrami:
 
+...
 
-Porównamy wyniki naszej implementacji metody z wynikami z [1], zebranymi na rysunku 8.8, zamieszczonym powyżej. Etykieta $(50,500)$ na osi poziomej, na tym rysunku, oznacza, że siatka została skonstruowana z parametrem $b=50$, a następnie estymator dolny został wyznaczony na podstawie dodatkowych $500$ trajektorii procesu Markowa $X_i$. Łamane ciągłe, na wykresie, oznaczają wartości estymatora górnego ($\hat V$) i dolnego; liniami przerywanymi zaznaczono dolne i górne granice przedziału ufności na poziomie $90\%$, oszacowanego na podstawie $25$ replikacji dla każdego rozmiaru siatki. Kropkowana linia pozioma wskazuje cenę dokładną.
+W szczególności, pozwala to na wypisanie wzoru na cenę europejskiej opcji kupna ("*call*") dla $Y$:
 
+...
 
-# Implementacja metody
-
+Wzór powyższy jest o tyle ważny, że umożliwia redukcję wariancji naszych estymatorów, przy użyciu tzw. "inner control variates", dla każdego węzła siatki, jak w zamieszczonym kodzie.
 
 ```{r}
-b = 50
-m = 500
-n = 10
-T = 1
-K = 100
-S_0 = 100
-r = .03
-delta = .05
-sigma = .40
-
-
+# source("AmericanOptionsStochasticMesh_GeomMean.R")
 ```
 
 # Literatura:
@@ -365,3 +277,5 @@ sigma = .40
 [3] O. Kallenberg, *Foundations of Modern Probability*, Springer, 2021
 
 [4] Rozkład logarytmiczno-normalny. <https://en.wikipedia.org/wiki/Log-normal_distribution>
+
+[5] Mark Broadie, Paul Glasserman, *A Stochastic Mesh Method for Pricing High-Dimensional American Options*, PaineWebber Working Papers in Money, Economics and Finance #PW9804, Columbia Business School, New York
